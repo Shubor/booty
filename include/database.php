@@ -46,7 +46,7 @@ function connect($file = 'config.ini') {
 function checkLogin($name,$pass) {
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
-    //
+    //    
     $connection = connect();
 
     $hash_password = crypt($pass);
@@ -54,9 +54,11 @@ function checkLogin($name,$pass) {
     $login = $connection->prepare($query);
     $login->bindValue(1, $name);
     $login->bindValue(2, $hash_password);
-    $login->execute()
+    $login->execute();
 
-    if ($playerName = $login->fetch()){
+    
+
+    if ($login->fetch()) {
         return true;
     } else {
         return false;
