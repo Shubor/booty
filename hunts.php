@@ -11,7 +11,7 @@ htmlHead();
 <?php
 try {
     $hunts = getAvailableHunts();
-    echo '<table>';
+    echo '<table class="table table-striped">';
     echo '<thead>';
     echo '<tr><th>Name</th><th>Starts</th><th>Distance</th><th>Waypoints</th></tr>';
     echo '</thead>';

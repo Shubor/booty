@@ -11,7 +11,7 @@ htmlHead();
 <?php
 try {
     $hunt = getHuntDetails($_GET['hunt']);
-    echo '<h2>Name</h2> ',$hunt['name'];
+    echo '<h2>Name</h2>',$hunt['name'];
     echo '<h2>Description</h2> ',$hunt['desc'];
     echo '<h2>Start Time</h2> ',$hunt['start'];
     echo '<h2>Distance</h2> ',$hunt['distance'];

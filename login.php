@@ -91,7 +91,6 @@ if(!isset($_POST['user']) || !isset($_POST['pass'])) {
       </div>
     </div>
     <div id="wrapper">
-    <div id="login">
         <?php echo $message; ?>
         <form class="form-inline" action="<?php echo 'login.php',$qstring; ?>" id="loginform" method="post">
             <input type=text name="user" class="input-small" placeholder="Name">

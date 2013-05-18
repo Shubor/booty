@@ -10,11 +10,11 @@ htmlHead();
 <h1>Checkpoint Visit</h1>
 <?php
 if (!isset($_REQUEST['vcode'])) {
-    echo 'Enter a validation code to confirm your waypoint visit<br />';
-    echo '<form action="validate.php" id="verify" method="post">
-        <label>Verification code <input type=text name="vcode" /></label><br />
-           <input type=submit value="Verify"/>
-    </form>';
+    echo '<p> Enter a validation code to confirm your waypoint visit </p>';
+    echo '<form class="form-inline" action="validate.php" id="verify" method="post">
+                <input type=text name="vcode" class="input" placeholder="Verification Code">
+                <button type="submit" class="btn">Verify</button>
+        </form>';
 } else {
     try {
         $visit = validateVisit($_SESSION['player'],$_REQUEST['vcode']);
@@ -25,9 +25,9 @@ if (!isset($_REQUEST['vcode'])) {
             echo '<h2>Congratulations!</h2> You\'ve validated a visit to your next waypoint!';
             echo '<p>Your team\'s score is now ',$visit['score'],'</p>';
             echo '<h2>Next Waypoint\'s clue</h2> <quote>',$visit['clue'],'</quote>';
-            echo '<form action="validate.php" id="verify" method="post">
-                <label>Verification code <input type=text name="vcode" /></label><br />
-                   <input type=submit value="Verify"/>
+            echo '<form class="form-inline" action="validate.php" id="verify" method="post">
+                <input type=text name="vcode" class="input" placeholder="Verification Code">
+                <button type="submit" class="btn">Verify</button>
             </form>';
         } else {
             echo '<h2>Wrong verification code!</h2> (Out of order, or not in this hunt)';

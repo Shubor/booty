@@ -12,22 +12,28 @@ htmlHead();
 try {
     $hunt = getHuntStatus($_SESSION['player']);
     if($hunt['status']=='in progress') {
-        echo '<h2>Hunt Name</h2> ', $hunt['name'];
-        echo '<h2>Playing in team</h2> ',$hunt['team'];
-        echo '<h2>Started</h2> ',$hunt['start_time'];
-        echo '<h2>Time elapsed</h2> ',$hunt['elapsed'];
-        echo '<h2>Current score</h2> ',$hunt['score'];
-        echo '<h2>Completed waypoints</h2> ',$hunt['waypoint_count'];
-        echo '<h2>Next Waypoint\'s clue</h2> <quote>',$hunt['clue'],'</quote>';
-        echo '<form action="validate.php" id="verify" method="post">
-            <label>Verification code <input type=text name="vcode" /></label>(test with "1234")<br />
-               <input type=submit value="Verify"/>
-        </form>';
+        echo '<table class="table">';
+        echo '<tr><td><b>Hunt Name</b></td> <td>',$hunt['name'],'</td></tr>';
+        echo '<tr><td><b>Playing in Team</b></td> <td>',$hunt['team'],'</td></tr>';
+        echo '<tr><td><b>Started</b></td> <td>',$hunt['start_time'],'</td></tr>';
+        echo '<tr><td><b>Time Elapsed</b></td> <td>',$hunt['elapsed'],'</td></tr>';
+        echo '<tr><td><b>Current Scores</b></td> <td>',$hunt['score'],'</td></tr>';
+
+        echo '<tr><td><b>Completed Waypoints</b></td> <td>',$hunt['waypoint_count'],'</td></tr>';
+        echo '<tr><td><b>Next Waypoint\'s clue</b></td> <td><p>',$hunt['clue'],'</p></ br>';
+        echo '<form class="form-inline" action="validate.php" id="verify" method="post">
+                <input type=text name="vcode" class="input" placeholder="Verification Code">
+                <button type="submit" class="btn">Verify</button>
+        </form></td>';
+        echo '</tr>';
+        echo '</table>';
     } else if ($hunt['status']=='complete') {
-        echo '<h2>Hunt Name</h2> ', $hunt['name'];
-        echo '<h2>Played in team</h2> ',$hunt['team'];
-        echo '<h2>Started</h2> ',$hunt['start_time'];
-        echo '<h2>Final score</h2> ',$hunt['score'];
+        echo '<table class="table">';
+        echo '<tr><td><b>Hunt Name</b></td> <td>',$hunt['name'],'</td></tr>';
+        echo '<tr><td><b>Playing in Team</b></td> <td>',$hunt['team'],'</td></tr>';
+        echo '<tr><td><b>Started</b></td> <td>',$hunt['start_time'],'</td></tr>';
+        echo '<tr><td><b>Final Score</b></td> <td>',$hunt['score'],'</td></tr>';
+        echo '</table>';
     } else {
         echo 'No hunt history.';
     }
