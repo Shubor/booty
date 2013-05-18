@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Home page giving details of a specific user
  */
@@ -8,7 +8,7 @@ startValidSession();
 htmlHead();
 ?>
 <h1>Home</h1>
-<?php 
+<?php
 try {
     $details = getUserDetails($_SESSION['player']);
     echo '<h2>Name</h2> ',$details['name'];

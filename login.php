@@ -1,14 +1,14 @@
-<?php 
+<?php
 /**
  * Login page
  * Users visiting the site via index.php are redirected to this login page, where
  * they must enter their username and password. Successful login starts a new session and
- * redirection to main content in index.php. Query parameters are preserved so that a user 
- * can use QR codes to go to confirmation page after logging in. 
+ * redirection to main content in index.php. Query parameters are preserved so that a user
+ * can use QR codes to go to confirmation page after logging in.
  */
 require_once('include/database.php');
 /**
- * Clean up after user logs out 
+ * Clean up after user logs out
  */
 function log_out() {
     $_SESSION['player'] = '';
@@ -19,7 +19,7 @@ function log_out() {
  * Process a user's login details
  * @param string $name username
  * @param string $pass password
- * @return boolean true if login details are correct, else false 
+ * @return boolean true if login details are correct, else false
  */
 function log_in($name, $pass) {
     $is_valid = checkLogin($name,$pass);
@@ -54,7 +54,7 @@ if(!isset($_POST['user']) || !isset($_POST['pass'])) {
     header('Location:'.$target);
     exit;
 } else {
-    $message='Login details incorrect. Please try again.';
+    $message='<div class="alert alert-error">Login details incorrect. Please try again.</div>';
 }
 
 //
@@ -69,21 +69,35 @@ if(!isset($_POST['user']) || !isset($_POST['pass'])) {
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Treasure Hunt Login</title>
     <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
-    <div id="wrapper">
-    <div id="content">
-    <h1>Treasure Hunt</h1>
-    <div id="login">
-        <form action="<?php echo 'login.php',$qstring; ?>" id="loginform" method="post">
-            <label>Name <input type=text name="user" /></label>(test with "testuser")<br />
-            <label>Password <input type=password name="pass" /></label>(test with "testpass")<br />
-            <input type=submit value="Log in"/>
-        </form>
-    <div id="message">
-    <?php echo $message; ?>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="index.php">booty</a>
+        </div>
+      </div>
     </div>
+    <div id="wrapper">
+    <div id="login">
+        <?php echo $message; ?>
+        <form class="form-inline" action="<?php echo 'login.php',$qstring; ?>" id="loginform" method="post">
+            <input type=text name="user" class="input-small" placeholder="Name">
+            <input type=password name="pass" class="input-small" placeholder="Password">
+            <button type="submit" class="btn">Sign in</button>
+        </form>
     </div>
     </div>
     </div>

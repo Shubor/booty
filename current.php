@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Web page to get details of a specific hunt
  */
@@ -8,7 +8,7 @@ startValidSession();
 htmlHead();
 ?>
 <h1>Hunt Status</h1>
-<?php 
+<?php
 try {
     $hunt = getHuntStatus($_SESSION['player']);
     if($hunt['status']=='in progress') {
@@ -17,7 +17,7 @@ try {
         echo '<h2>Started</h2> ',$hunt['start_time'];
         echo '<h2>Time elapsed</h2> ',$hunt['elapsed'];
         echo '<h2>Current score</h2> ',$hunt['score'];
-        echo '<h2>Completed waypoints</h2> ',$hunt['waypoint_count'];  
+        echo '<h2>Completed waypoints</h2> ',$hunt['waypoint_count'];
         echo '<h2>Next Waypoint\'s clue</h2> <quote>',$hunt['clue'],'</quote>';
         echo '<form action="validate.php" id="verify" method="post">
             <label>Verification code <input type=text name="vcode" /></label>(test with "1234")<br />

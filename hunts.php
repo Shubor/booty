@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Web page to display available hunts
  */
@@ -8,7 +8,7 @@ startValidSession();
 htmlHead();
 ?>
 <h1>Browse Hunts</h1>
-<?php 
+<?php
 try {
     $hunts = getAvailableHunts();
     echo '<table>';

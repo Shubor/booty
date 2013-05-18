@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Web page to display information about a specific current hunt
  */
@@ -8,7 +8,7 @@ startValidSession();
 htmlHead();
 ?>
 <h1>Hunt Details</h1>
-<?php 
+<?php
 try {
     $hunt = getHuntDetails($_GET['hunt']);
     echo '<h2>Name</h2> ',$hunt['name'];

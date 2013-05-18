@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Web page to confirm whether a valid waypoint has been visited
  */
@@ -18,7 +18,7 @@ if (!isset($_REQUEST['vcode'])) {
 } else {
     try {
         $visit = validateVisit($_SESSION['player'],$_REQUEST['vcode']);
-        if($visit['status'] == 'complete') { 
+        if($visit['status'] == 'complete') {
             echo '<h2>Congratulations!</h2> You\'ve validated a visit to your last waypoint!';
             echo '<p>Your team has finished with a final score of ',$visit['score'],'</p>';
         } else if($visit['status'] == 'correct') {
