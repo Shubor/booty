@@ -17,8 +17,7 @@ try {
         echo '<tr><td><b>Playing in Team</b></td> <td>',$hunt['team'],'</td></tr>';
         echo '<tr><td><b>Started</b></td> <td>',$hunt['start_time'],'</td></tr>';
         echo '<tr><td><b>Time Elapsed</b></td> <td>',$hunt['elapsed'],'</td></tr>';
-        echo '<tr><td><b>Current Scores</b></td> <td>',$hunt['score'],'</td></tr>';
-
+        echo '<tr><td><b>Current Score</b></td> <td>',$hunt['score'],'</td></tr>';
         echo '<tr><td><b>Completed Waypoints</b></td> <td>',$hunt['waypoint_count'],'</td></tr>';
         echo '<tr><td><b>Next Waypoint\'s clue</b></td> <td><p>',$hunt['clue'],'</p></ br>';
         echo '<form class="form-inline" action="validate.php" id="verify" method="post">
