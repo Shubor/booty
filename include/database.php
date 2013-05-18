@@ -11,6 +11,8 @@
  * @return PDO database object
  * @throws exception
  */
+
+
 function connect($file = 'config.ini') {
 	// read database seetings from config file
     if ( !$settings = parse_ini_file($file, TRUE) ) 
@@ -45,7 +47,20 @@ function checkLogin($name,$pass) {
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
     //
-    return ($name=='testuser' && $pass=='testpass');
+    $connection = connect();
+
+    $hash_password = crypt($pass);
+    $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
+    $login = $connection->prepare($query);
+    $login->bindValue(1, $name);
+    $login->bindValue(2, $hash_password);
+    $login->execute()
+
+    if ($playerName = $login->fetch()){
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
