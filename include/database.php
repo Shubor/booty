@@ -47,22 +47,27 @@ function checkLogin($name,$pass) {
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
     //    
-    $connection = connect();
+    
 
-    $hash_password = crypt($pass);
-    $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
-    $login = $connection->prepare($query);
-    $login->bindValue(1, $name);
-    $login->bindValue(2, $hash_password);
-    $login->execute();
+    return ($name=='testuser' && $pass=='testpass');
+
+    //code is commented until db is setup
+    // $connection = connect();
+
+    // $hash_password = crypt($pass);
+    // $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
+    // $login = $connection->prepare($query);
+    // $login->bindValue(1, $name);
+    // $login->bindValue(2, $hash_password);
+    // $login->execute();
 
     
 
-    if ($login->fetch()) {
-        return true;
-    } else {
-        return false;
-    }
+    // if ($login->fetch()) {
+    //     return true;
+    // } else {
+    //     return false;
+    // }
 }
 
 /**
