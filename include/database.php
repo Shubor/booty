@@ -31,8 +31,10 @@ function connect($file = 'config.ini') {
         $dbh=new PDO($dns, $user, $pw);
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
-        print "Error Connecting to Database: " . $e->getMessage() . "<br/>";
-        die();
+        //print "Error Connecting to Database: " . $e->getMessage() . "<br/>";
+        //die();
+        return PGSQL_CONNECTION_BAD;
+
     }
     return $dbh;
 }
@@ -46,28 +48,27 @@ function connect($file = 'config.ini') {
 function checkLogin($name,$pass) {
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
-    //    
-    
+    //   
 
-    //return ($name=='testuser' && $pass=='testpass');
+    //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
+    $connection = connect();
 
-    //code is commented until db is setup
-    // $connection = connect();
+    if (pg_connection_status($connection) != 'PGSQL_CONNECTION_GOOD'){
+        return ($name == 'testuser' && $pass == 'testpass');
+    } else {
+        $hash_password = crypt($pass);
+        $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
+        $login = $connection->prepare($query);
+        $login->bindValue(1, $name);
+        $login->bindValue(2, crypt($pass, $hash_password));
+        $login->execute();
 
-    // $hash_password = crypt($pass);
-    // $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
-    // $login = $connection->prepare($query);
-    // $login->bindValue(1, $name);
-    // $login->bindValue(2, $hash_password);
-    // $login->execute();
-
-    
-
-    // if ($login->fetch()) {
-    //     return true;
-    // } else {
-    //     return false;
-    // }
+        if ($login->fetch()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 /**
