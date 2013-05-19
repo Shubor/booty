@@ -33,7 +33,7 @@ function connect($file = 'config.ini') {
     } catch (PDOException $e) {
         //print "Error Connecting to Database: " . $e->getMessage() . "<br/>";
         //die();
-        return PGSQL_CONNECTION_BAD;
+        return 'PGSQL_CONNECTION_BAD';
 
     }
     return $dbh;
@@ -77,15 +77,25 @@ function checkLogin($name,$pass) {
  * @return array Details of user - see index.php
  */
 function getUserDetails($user) {
-    // STUDENT TODO:
-    // Replace lines below with code to validate details from the database
-    if ($user != 'testuser') throw new Exception('Unknown user');
+
+	$conn = connect($file = 'config.ini');
+
+	$query = "SELECT name FROM Player WHERE name = $user";
+		$name = pg_query($conn, $query);
+	$query = "SELECT address FROM Player WHERE name = $user";
+		$addr = pg_query($conn, $query);
+	$query = "SELECT curr FROM memberOf WHERE name = $user LIMIT 1";
+		$team = pg_query($conn, $query);
+	$query = "SELECT stat_value FROM PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
+		$nhunts = pg_query($conn, $query);
+	
+	
     $results = array();
     // Example user data - this should come from a query
-    $results['name'] = 'Pirate Bob';
-    $results['address'] = 'Sydney, Australia';
-    $results['team'] = 'Lily-livered landlubbers';
-    $results['nhunts'] = 17;
+    $results['name'] = $name;
+    $results['address'] = $addr;
+    $results['team'] = $addr;
+    $results['nhunts'] =$nhunts;
     $results['badges'] = array(
         array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
         array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
