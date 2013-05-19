@@ -1,5 +1,5 @@
 /*
- * INFo2120 / INFO2820
+ * INFO2120 / INFO2820
  * Database Systems I
  *
  * Reference Schema for INFO2120/2820 Assignment - Treasure Hunt Database

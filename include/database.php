@@ -49,7 +49,7 @@ function checkLogin($name,$pass) {
     //    
     
 
-    return ($name=='testuser' && $pass=='testpass');
+    //return ($name=='testuser' && $pass=='testpass');
 
     //code is commented until db is setup
     // $connection = connect();
@@ -125,18 +125,40 @@ function getAvailableHunts() {
  */
 function getHuntDetails($hunt) {
     
+	$conn = connect($file = 'config.ini');
+	
     // STUDENT TODO:
     // Replace lines below with code to get details of a hunt from the database
-    if ($hunt != '1234') throw new Exception('Unknown hunt.');
+	$query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
+		$exists = pg_query($conn, $query);
+	
+	
+    if ($exists = 0) throw new Exception('Unknown hunt.');
     
     // Example hunt details - this should come from a query
+	
+	$query = "SELECT title FROM Hunt WHERE id = $hunt";
+		$name = pg_query($conn, $query);
+	$query = "SELECT description FROM Hunt WHERE id = $hunt";
+		$desc = pg_query($conn, $query);
+	$query = "SELECT count(*) FROM Participates WHERE hunt = $hunt";
+		$nteams = pg_query($conn, $query);
+	$query = "SELECT distance FROM Hunt WHERE id = $hunt";
+		$dist = pg_query($conn, $query);
+	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+		$desc = pg_query($conn, $query);
+	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+		$start = pg_query($conn, $query);
+	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
+		$n_wp = pg_query($conn, $query);
+	
     $results = array(
-        'name'=>'Harbour Havoc',
-        'desc'=>'A swashbuckling adventure around the harbour, with lots of stunning views along the way. But don\'t stare too long else someone else will get your treasure!',
-        'nteams'=>7,
-        'distance'=>'5.5 km',
-        'start'=>'9am 10/2/13',
-        'n_wp'=>5,  
+        'name'=>$name,
+        'desc'=>$desc,
+        'nteams'=>$nteams,
+        'distance'=>$dist,
+        'start'=>$start,
+        'n_wp'=>$n_wp,  
     );
     
     return $results;
