@@ -33,7 +33,6 @@ function connect($file = 'config.ini') {
     } catch (PDOException $e) {
         print "Error Connecting to Database: " . $e->getMessage() . "<br/>";
         die();
-        
     }
     return $dbh;
 }
@@ -47,31 +46,28 @@ function connect($file = 'config.ini') {
 function checkLogin($name,$pass) {
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
-    //   
+    //    
+    
 
-    //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
-    $connection = connect();
+    return ($name=='testuser' && $pass=='testpass');
 
-    if (pg_connection_status($connection) == PGSQL_CONNECTION_BAD){
-        echo "Bad connection";
-        return ($name == 'testuser' && $pass == 'testpass');
-    } else {
-        echo "Good connection";
-        $hash_password = crypt($pass);
-        $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
-        $login = $connection->prepare($query);
-        $login->bindValue(1, $name);
-        $login->bindValue(2, $hash_password);
-        $login->execute();
+    //code is commented until db is setup
+    // $connection = connect();
 
-        if ($login->fetch()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    // $hash_password = crypt($pass);
+    // $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
+    // $login = $connection->prepare($query);
+    // $login->bindValue(1, $name);
+    // $login->bindValue(2, $hash_password);
+    // $login->execute();
 
+    
 
+    // if ($login->fetch()) {
+    //     return true;
+    // } else {
+    //     return false;
+    // }
 }
 
 /**
