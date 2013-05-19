@@ -214,21 +214,41 @@ function getHuntStatus($user) {
     //     'clue'=>'Sit down and watch the ships go by with Mrs Macquarie'
     // );
 
-    if ($user != 'testuser') throw new Exception('Unknown user');
+    	$conn = connect($file = 'config.ini');
+	
+	$query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
+		$team = pg_query($conn, $query);
+	$query = "SELECT hunt FROM Participates WHERE team = $team LIMIT 1";
+		$hunt = pg_query($conn, $query);
+	$query = "SELECT currentWP FROM Participates WHERE team = $team LIMIT 1";
+		$currentWP = pg_query($conn, $query);
+	$query = "SELECT status FROM Hunt WHERE id = $hunt"
+		$status = pg_query($conn, $query);
+	$query = "SELECT name FROM Hunt WHERE id = $hunt"
+		$name = pg_query($conn, $query);
+	$query = "SELECT score FROM participates WHERE team = $team LIMIT 1";
+		$score = pg_query($conn, $query);
+	$query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = $currentWP";
+		$clue = pg_query($conn, $query);
+	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+		$startTime = pg_query($conn, $query);
+	
+
+    //if ($user != 'testuser') throw new Exception('Unknown user');
     $results = array(
-        'status'=>'in progress',
-        'name'=>'Harbour Havoc',
-        'team'=>'Lily-livered landlubbers',
-        'start_time'=>'9am 10/2/13',
-        'elapsed'=>'4 hours',
-        'score'=>'3564',
-        'waypoint_count'=>5,
-        'clue'=>'Sit down and watch the ships go by with Mrs Macquarie'
+        'status'=>$status,
+        'name'=>$name,
+        'team'=>$team,
+        'start_time'=>$startTime,
+        //'elapsed'=>'4 hours', Need separate conditional table, only included if hunt status == active
+        'score'=>$score,
+        'waypoint_count'=>$currentWP	,
+        'clue'=>$clue
     );
 
     return $results;
 }
-
+	
 /**
  * Check validation code is for user's next expected waypoint
  * @param string $user
