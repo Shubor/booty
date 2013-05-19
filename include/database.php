@@ -31,10 +31,8 @@ function connect($file = 'config.ini') {
         $dbh=new PDO($dns, $user, $pw);
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
-        //print "Error Connecting to Database: " . $e->getMessage() . "<br/>";
-        //die();
-        return 'PGSQL_CONNECTION_BAD';
-
+        print "Error Connecting to Database: " . $e->getMessage() . "<br/>";
+        die();
     }
     return $dbh;
 }
@@ -56,11 +54,23 @@ function checkLogin($name,$pass) {
     if ($connection === PGSQL_CONNECTION_BAD){
         return ($name == 'testuser' && $pass == 'testpass');
     } else {
+
+        $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
+
+        $salt = $connection->prepare($getsalt);
+        $salt->bindValue(1, $name);
+        $salt->execute();
+
+        $salt->fetch();
+
+
+        
+
         $hash_password = crypt($pass);
-        $query = "SELECT name FROM Player WHERE name = ? AND password = ? LIMIT 1";
+        $query = "SELECT name FROM treasurehunt.Player AS p WHERE p.name = ? AND p.password = ? LIMIT 1";
         $login = $connection->prepare($query);
         $login->bindValue(1, $name);
-        $login->bindValue(2, crypt($pass, $hash_password));
+        $login->bindValue(2, $pass);
         $login->execute();
 
         if ($login->fetch()) {
@@ -78,21 +88,22 @@ function checkLogin($name,$pass) {
  */
 function getUserDetails($user) {
 
-	$conn = connect($file = 'config.ini');
+	//$conn = connect($file = 'config.ini');
+    $conn = pg_connect("host=localhost port=5432 dbname=booty user=postgres password=12345");
 
-	$query = "SELECT name FROM Player WHERE name = $user";
-		$name = pg_query($conn, $query);
-	$query = "SELECT address FROM Player WHERE name = $user";
+	$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
+		$name = pg_fetch_row(pg_query($conn, $query));
+	$query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
 		$addr = pg_query($conn, $query);
-	$query = "SELECT curr FROM memberOf WHERE name = $user LIMIT 1";
+	$query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
 		$team = pg_query($conn, $query);
-	$query = "SELECT stat_value FROM PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
+	$query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
 		$nhunts = pg_query($conn, $query);
 	
 	
     $results = array();
     // Example user data - this should come from a query
-    $results['name'] = $name;
+    $results['name'] = $name[0];
     $results['address'] = $addr;
     $results['team'] = $addr;
     $results['nhunts'] =$nhunts;
