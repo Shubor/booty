@@ -53,7 +53,7 @@ function checkLogin($name,$pass) {
     //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
     $connection = connect();
 
-    if (pg_connection_status($connection) != 'PGSQL_CONNECTION_GOOD'){
+    if ($connection === PGSQL_CONNECTION_BAD){
         return ($name == 'testuser' && $pass == 'testpass');
     } else {
         $hash_password = crypt($pass);
