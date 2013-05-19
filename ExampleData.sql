@@ -38,7 +38,7 @@ BEGIN TRANSACTION;
   -- ISO/IEC 5218  defines three possible values for gender + NULL (http://en.wikipedia.org/wiki/ISO/IEC_5218)
   ALTER TABLE TreasureHunt.Player DROP CONSTRAINT IF EXISTS Player_Gender;
   ALTER TABLE TreasureHunt.Player ALTER COLUMN gender SET DATA TYPE VARCHAR(3);
-  ALTER TABLE TreasureHunt.Player ADD  CONSTRAINT Player_Gender CHECK ( gender IN ('m','f','n/a') );
+  ALTER TABLE TreasureHunt.Player ADD  CONSTRAINT Player_Gender CHECK ( gender IN ('m','f','o') );
 
   -- introduce some badges which will be used by different hunts
   INSERT INTO TreasureHunt.Badge (name, description, condition)
@@ -284,8 +284,8 @@ VALUES ('Luke Skywalker', 'usetheforce1', 'u#e#h#f#r#', 'm', 'Tatooine'),
        ('Lando Calrissian', 'survivor7', 's#r#i#o#7#', 'm', 'Socorro'),
        ('Jabba the Hutt', 'obese8', 'o#e#s#8', 'm', 'Nal Hutta'),
        ('Boba Fett', 'bountyhunter9', 'b#u#t#h#n#', 'm', 'Kamino'),
-       ('R2D2', 'beepbeep10', 'b#e#p#e#p#', 'n/a', 'Naboo'),
-       ('C-3PO', 'chatterbox11', 'c#a#t#r#o#', 'n/a', 'Tatooine'),
+       ('R2D2', 'beepbeep10', 'b#e#p#e#p#', 'o', 'Naboo'),
+       ('C-3PO', 'chatterbox11', 'c#a#t#r#o#', 'o', 'Tatooine'),
        ('Yoda', 'wiseone12', 'w#s#o#e#2', 'm', 'Unknown'),
        ('Admiral Piett', 'swedishhouse13', 's#e#i#h#o#', 'm', 'Axxila'),
        ('Admiral Ackbar', 'itsatrap14', 'i#s#t#a#1#', 'm', 'Mon Calamari');
