@@ -49,36 +49,32 @@ function checkLogin($name,$pass) {
     //
 
     //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
-    $connection = connect();
+   $STH = connect();
 
-    if ($connection === PGSQL_CONNECTION_BAD){
-        return ($name == 'testuser' && $pass == 'testpass');
-    } else {
+   if ($STH === PGSQL_CONNECTION_BAD){
+      return ($name == 'testuser' && $pass == 'testpass');
+   } else {
 
-        $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
+      $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
 
-        $salt = $connection->prepare($getsalt);
-        $salt->bindValue(1, $name);
-        $salt->execute();
+      $salt = $connection->prepare($getsalt);
+      $salt->bindValue(1, $name);
+      $salt->execute();
 
-        $salt->fetch();
+      $salt->fetch();
+      $hash_password = crypt($pass);
 
+      $query = "SELECT name FROM treasurehunt.Player AS p WHERE p.name = ? AND p.password = ? LIMIT 1";
+      $query->bindValue(1, $name);
+      $query->bindValue(2, $pass);
+      $STH->execute($query);
 
-        
-
-        $hash_password = crypt($pass);
-        $query = "SELECT name FROM treasurehunt.Player AS p WHERE p.name = ? AND p.password = ? LIMIT 1";
-        $login = $connection->prepare($query);
-        $login->bindValue(1, $name);
-        $login->bindValue(2, $pass);
-        $login->execute();
-
-        if ($login->fetch()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+      if ($STH->fetch()) {
+         return true;
+      } else {
+         return false;
+      }
+   }
 }
 
 /**
@@ -89,25 +85,42 @@ function checkLogin($name,$pass) {
 function getUserDetails($user) {
 
 	//$conn = connect($file = 'config.ini');
-    $conn = pg_connect("host=localhost port=5432 dbname=booty user=postgres password=12345");
+   $STH = connect();
 
-	$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
+   $query = "SELECT P.name as name, P.address as addr, M.curr as curr, PS.stat_value as stat 
+            FROM treasurehunt.Player P 
+            INNERJOIN treasurehunt.memberOf M ON (P.name = M.player) 
+            INNERJOIN treasurehunt.PlayerStats PS ON (P.name = PS.player)
+            WHERE P.name = ? AND PS.stat_name = 'Number of Hunts';";
+
+   $query->bindParam(1, $user);
+
+   $STH->execute($query);
+
+   $STH->setFetchMode(PDO::FETCH_ASSOC);
+
+   $result = $STH->fetch();
+
+
+
+
+	/*$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
 		$name = pg_fetch_row(pg_query($conn, $query));
 	$query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
 		$addr = pg_query($conn, $query);
 	$query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
 		$team = pg_query($conn, $query);
 	$query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
-		$nhunts = pg_query($conn, $query);
+		$nhunts = pg_query($conn, $query);*/
 	
 	
-    $results = array();
-    // Example user data - this should come from a query
-    $results['name'] = $name[0];
-    $results['address'] = $addr;
-    $results['team'] = $addr;
-    $results['nhunts'] =$nhunts;
-    $results['badges'] = array(
+      $results = array();
+      // Example user data - this should come from a query
+      $results['name'] = $result[NAME];
+      $results['address'] = $result[ADDR];
+      $results['team'] = $result[CURR];
+      $results['nhunts'] =$result[STAT];
+      $results['badges'] = array(
         array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
         array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
         array('desc'=>'Last player to complete a hunt', 'name'=>'Peg Leg', 'quantity'=>2),
