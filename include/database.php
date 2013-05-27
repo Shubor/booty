@@ -233,9 +233,9 @@ function getHuntStatus($user) {
 		$hunt = pg_query($conn, $query);
 	$query = "SELECT currentWP FROM Participates WHERE team = $team LIMIT 1";
 		$currentWP = pg_query($conn, $query);
-	$query = "SELECT status FROM Hunt WHERE id = $hunt"
+	$query = "SELECT status FROM Hunt WHERE id = $hunt";
 		$status = pg_query($conn, $query);
-	$query = "SELECT name FROM Hunt WHERE id = $hunt"
+	$query = "SELECT name FROM Hunt WHERE id = $hunt";
 		$name = pg_query($conn, $query);
 	$query = "SELECT score FROM participates WHERE team = $team LIMIT 1";
 		$score = pg_query($conn, $query);
