@@ -11,8 +11,6 @@
  * @return PDO database object
  * @throws exception
  */
-
-
 function connect($file = 'config.ini')
 {
     // read database seetings from config file
@@ -127,8 +125,8 @@ function getUserDetails($user) {
     $team = pg_query($conn, $query);
   $query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
     $nhunts = pg_query($conn, $query);*/
-  
-  
+
+
   $results = array();
   // Example user data - this should come from a query
   $results['name'] = $resultName['name'];
@@ -180,43 +178,39 @@ function getAvailableHunts()
 function getHuntDetails($hunt)
 {
 
-	$conn = connect($file = 'config.ini');
+	   // $conn = connect($file = 'config.ini');
 
     // STUDENT TODO:
     // Replace lines below with code to get details of a hunt from the database
 
-    // $STH = connect();
+    $STH = connect();
 
     $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
     $exists = pg_query($conn, $query);
-
     if ($exists = 0) throw new Exception('Unknown hunt.');
 
     // Example hunt details - this should come from a query
 
-  	$query = "SELECT title FROM Hunt WHERE id = $hunt";
-  		$name = pg_query($conn, $query);
-  	$query = "SELECT description FROM Hunt WHERE id = $hunt";
-  		$desc = pg_query($conn, $query);
-  	$query = "SELECT count(*) FROM Participates WHERE hunt = $hunt";
-  		$nteams = pg_query($conn, $query);
-  	$query = "SELECT distance FROM Hunt WHERE id = $hunt";
-  		$dist = pg_query($conn, $query);
-  	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-  		$desc = pg_query($conn, $query);
-  	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-  		$start = pg_query($conn, $query);
-  	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
-  		$n_wp = pg_query($conn, $query);
+  	// $query = "SELECT title FROM Hunt WHERE id = $hunt";
+  	// 	$name = pg_query($conn, $query);
+  	// $query = "SELECT description FROM Hunt WHERE id = $hunt";
+  	// 	$desc = pg_query($conn, $query);
+  	// $query = "SELECT count(*) FROM Participates WHERE hunt = $hunt";
+  	// 	$nteams = pg_query($conn, $query);
+  	// $query = "SELECT distance FROM Hunt WHERE id = $hunt";
+  	// 	$dist = pg_query($conn, $query);
+  	// $query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+  	// 	$desc = pg_query($conn, $query);
+  	// $query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+  	// 	$start = pg_query($conn, $query);
+  	// $query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
+  	// 	$n_wp = pg_query($conn, $query);
 
-    $results = array(
-        'name'=>$name,
-        'desc'=>$desc,
-        'nteams'=>$nteams,
-        'distance'=>$dist,
-        'start'=>$start,
-        'n_wp'=>$n_wp,
-    );
+    $query = $STH->prepare("SELECT title AS name, description AS desc, /*count*/ distance, startTime AS start, numWayPoints AS n_wp FROM TreasureHunt.Hunt WHERE id = ?");
+    $query->bindParam(1, $hunt, PDO::PARAM_STR);
+    $query->execute();
+
+    $results->setFetchMode(PDO::FETCH_ASSOC);
 
     return $results;
 }
@@ -246,7 +240,7 @@ function getHuntStatus($user)
       RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
     WHERE M.player='?' AND M.current='true' AND P.currentWP=W.num;");
 
-    $queryName->bindParam(1, $user, PDO::PARAM_STR);
+    $query->bindParam(1, $user, PDO::PARAM_STR);
 
     $query->execute();
 
