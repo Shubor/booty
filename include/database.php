@@ -13,8 +13,9 @@
  */
 
 
-function connect($file = 'config.ini') {
-	// read database seetings from config file
+function connect($file = 'config.ini')
+{
+    // read database seetings from config file
     if ( !$settings = parse_ini_file($file, TRUE) )
         throw new exception('Unable to open ' . $file);
 
@@ -26,7 +27,7 @@ function connect($file = 'config.ini') {
     $user= $settings['db_user']['username'];
     $pw  = $settings['db_user']['password'];
 
-	// create new database connection
+    // create new database connection
     try {
         $dbh=new PDO($dns, $user, $pw);
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -43,38 +44,44 @@ function connect($file = 'config.ini') {
  * @param string $pass Password
  * @return boolean True is login details are correct
  */
-function checkLogin($name,$pass) {
+function checkLogin($name,$pass)
+{
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
     //
 
     //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
-   $STH = connect();
+    $STH = connect();
 
-   if ($STH === PGSQL_CONNECTION_BAD){
+    if ($STH === PGSQL_CONNECTION_BAD)
+    {
       return ($name == 'testuser' && $pass == 'testpass');
-   } else {
+    }
+    else
+    {
+        // $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
 
-      // $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
+        // $salt = $STH->prepare($getsalt);
+        // $salt->bindValue(1, $name);
+        // $salt->execute();
 
-      // $salt = $STH->prepare($getsalt);
-      // $salt->bindValue(1, $name);
-      // $salt->execute();
+        // $salt->fetch();
+        // $hash_password = crypt($pass);
 
-      // $salt->fetch();
-      // $hash_password = crypt($pass);
+        $query = $STH->prepare("SELECT name FROM treasurehunt.Player AS p WHERE p.name = :name AND p.password = :passwd LIMIT 1");
+        $query->bindValue(':name', $name, PDO::PARAM_INT);
+        $query->bindValue('passwd', $pass, PDO::PARAM_STR);
+        $query->execute();
 
-      $query = $STH->prepare("SELECT name FROM treasurehunt.Player AS p WHERE p.name = :name AND p.password = :passwd LIMIT 1");
-      $query->bindValue(':name', $name, PDO::PARAM_INT);
-      $query->bindValue('passwd', $pass, PDO::PARAM_STR);
-      $query->execute();
-
-      if ($query->fetch()) {
-         return true;
-      } else {
-         return false;
-      }
-   }
+        if ($query->fetch())
+        {
+           return true;
+        }
+        else
+        {
+           return false;
+        }
+    }
 }
 
 /**
@@ -82,75 +89,76 @@ function checkLogin($name,$pass) {
  * @param string $user login name user
  * @return array Details of user - see index.php
  */
-function getUserDetails($user) {
+function getUserDetails($user)
+{
 
-	//$conn = connect($file = 'config.ini');
-   $STH = connect();
+  	//$conn = connect($file = 'config.ini');
+    $STH = connect();
 
-  $queryName =  $STH->prepare("SELECT P.name as name, P.addr as addr, M.team as curr
-                FROM treasurehunt.Player P 
-                LEFT OUTER JOIN treasurehunt.memberOf M ON (P.name = M.player) 
-                WHERE P.name = ?");
+    $queryName =  $STH->prepare("SELECT P.name as name, P.addr as addr, M.team as curr
+                  FROM treasurehunt.Player P
+                  LEFT OUTER JOIN treasurehunt.memberOf M ON (P.name = M.player)
+                  WHERE P.name = ?");
 
-  $queryStat =  $STH->prepare("SELECT PS.stat_value as stat
-                FROM treasurehunt.playerStats PS 
-                WHERE PS.player = ? AND PS.stat_name = 'finished_hunts'");
+    $queryStat =  $STH->prepare("SELECT PS.stat_value as stat
+                  FROM treasurehunt.playerStats PS
+                  WHERE PS.player = ? AND PS.stat_name = 'finished_hunts'");
 
-  $queryBadge = $STH->prepare("SELECT A.badge as name, B.description as desc
-                              FROM treasurehunt.achievements A 
-                              INNER JOIN treasurehunt.badge B ON (A.badge = B.name)
-                              WHERE A.player = ?");
-
-
-  $queryName->bindParam(1, $user, PDO::PARAM_STR);
-  $queryStat->bindParam(1, $user, PDO::PARAM_STR);
-  $queryBadge->bindParam(1, $user, PDO::PARAM_STR);
-
-  $queryName->execute();
-  $queryStat->execute();
-  $queryBadge->execute();
-
-  $queryName->setFetchMode(PDO::FETCH_ASSOC);
-  $queryStat->setFetchMode(PDO::FETCH_ASSOC);
-  $queryBadge->setFetchMode(PDO::FETCH_ASSOC);
-
-  $resultName = $queryName->fetch();
-  $resultStat = $queryStat->fetch();
-  $resultBadge = $queryBadge->fetchAll();
-
-  // print_r($resultBadge);
+    $queryBadge = $STH->prepare("SELECT A.badge as name, B.description as desc
+                                FROM treasurehunt.achievements A
+                                INNER JOIN treasurehunt.badge B ON (A.badge = B.name)
+                                WHERE A.player = ?");
 
 
-	/*$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
-		$name = pg_fetch_row(pg_query($conn, $query));
-	$query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
-		$addr = pg_query($conn, $query);
-	$query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
-		$team = pg_query($conn, $query);
-	$query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
-		$nhunts = pg_query($conn, $query);*/
-	
-	
-  $results = array();
-  // Example user data - this should come from a query
-  $results['name'] = $resultName['name'];
-  $results['address'] = $resultName['addr'];
-  $results['team'] = $resultName['curr'];
-  $results['nhunts'] =$resultStat['stat'];
-  $results['badges'] = $resultBadge;
+    $queryName->bindParam(1, $user, PDO::PARAM_STR);
+    $queryStat->bindParam(1, $user, PDO::PARAM_STR);
+    $queryBadge->bindParam(1, $user, PDO::PARAM_STR);
 
-  // array(
-  //   array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
-  //   array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
-  //   array('desc'=>'Last player to complete a hunt', 'name'=>'Peg Leg', 'quantity'=>2),
-  //   array('desc'=>'First player to complete a hunt', 'name'=>'Gold Medal'),
-  //   array('desc'=>'Second player to complete a hunt', 'name'=>'Silver Medal'),
-  //   array('desc'=>'Third player to complete a hunt', 'name'=>'Bronze Medal', 'quantity'=>3),
-  //   array('desc'=>'Visited locations out of order in a hunt', 'name'=>'Broken Compass', 'quantity'=>2),
-  //   array('desc'=>'Visited a location from the wrong hunt', 'name'=>'Crossed Paths')
-  // );
+    $queryName->execute();
+    $queryStat->execute();
+    $queryBadge->execute();
 
-  return $results;
+    $queryName->setFetchMode(PDO::FETCH_ASSOC);
+    $queryStat->setFetchMode(PDO::FETCH_ASSOC);
+    $queryBadge->setFetchMode(PDO::FETCH_ASSOC);
+
+    $resultName = $queryName->fetch();
+    $resultStat = $queryStat->fetch();
+    $resultBadge = $queryBadge->fetchAll();
+
+    // print_r($resultBadge);
+
+
+  	/*$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
+  		$name = pg_fetch_row(pg_query($conn, $query));
+  	$query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
+  		$addr = pg_query($conn, $query);
+  	$query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
+  		$team = pg_query($conn, $query);
+  	$query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
+  		$nhunts = pg_query($conn, $query);*/
+
+
+    $results = array();
+    // Example user data - this should come from a query
+    $results['name'] = $resultName['name'];
+    $results['address'] = $resultName['addr'];
+    $results['team'] = $resultName['curr'];
+    $results['nhunts'] =$resultStat['stat'];
+    $results['badges'] = $resultBadge;
+
+    // array(
+    //   array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
+    //   array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
+    //   array('desc'=>'Last player to complete a hunt', 'name'=>'Peg Leg', 'quantity'=>2),
+    //   array('desc'=>'First player to complete a hunt', 'name'=>'Gold Medal'),
+    //   array('desc'=>'Second player to complete a hunt', 'name'=>'Silver Medal'),
+    //   array('desc'=>'Third player to complete a hunt', 'name'=>'Bronze Medal', 'quantity'=>3),
+    //   array('desc'=>'Visited locations out of order in a hunt', 'name'=>'Broken Compass', 'quantity'=>2),
+    //   array('desc'=>'Visited a location from the wrong hunt', 'name'=>'Crossed Paths')
+    // );
+
+    return $results;
 }
 
 /**
@@ -158,7 +166,8 @@ function getUserDetails($user) {
  * @return array Various details of for available hunts - see hunts.php
  * @throws Exception
  */
-function getAvailableHunts() {
+function getAvailableHunts()
+{
     // STUDENT TODO:
     // Replace lines below with code to get list of available hunts from the database
     // Example hunt info - this should come from a query
@@ -177,34 +186,37 @@ function getAvailableHunts() {
  * @return array Various details of current hunt - see huntdetails.php
  * @throws Exception
  */
-function getHuntDetails($hunt) {
+function getHuntDetails($hunt)
+{
 
 	$conn = connect($file = 'config.ini');
 
     // STUDENT TODO:
     // Replace lines below with code to get details of a hunt from the database
-	$query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
-		$exists = pg_query($conn, $query);
 
+    // $STH = connect();
+
+    $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
+    $exists = pg_query($conn, $query);
 
     if ($exists = 0) throw new Exception('Unknown hunt.');
 
     // Example hunt details - this should come from a query
 
-	$query = "SELECT title FROM Hunt WHERE id = $hunt";
-		$name = pg_query($conn, $query);
-	$query = "SELECT description FROM Hunt WHERE id = $hunt";
-		$desc = pg_query($conn, $query);
-	$query = "SELECT count(*) FROM Participates WHERE hunt = $hunt";
-		$nteams = pg_query($conn, $query);
-	$query = "SELECT distance FROM Hunt WHERE id = $hunt";
-		$dist = pg_query($conn, $query);
-	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-		$desc = pg_query($conn, $query);
-	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-		$start = pg_query($conn, $query);
-	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
-		$n_wp = pg_query($conn, $query);
+  	$query = "SELECT title FROM Hunt WHERE id = $hunt";
+  		$name = pg_query($conn, $query);
+  	$query = "SELECT description FROM Hunt WHERE id = $hunt";
+  		$desc = pg_query($conn, $query);
+  	$query = "SELECT count(*) FROM Participates WHERE hunt = $hunt";
+  		$nteams = pg_query($conn, $query);
+  	$query = "SELECT distance FROM Hunt WHERE id = $hunt";
+  		$dist = pg_query($conn, $query);
+  	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+  		$desc = pg_query($conn, $query);
+  	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+  		$start = pg_query($conn, $query);
+  	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
+  		$n_wp = pg_query($conn, $query);
 
     $results = array(
         'name'=>$name,
@@ -224,10 +236,31 @@ function getHuntDetails($hunt) {
  * @return array Various details of current hunt - see current.php
  * @throws Exception
  */
-function getHuntStatus($user) {
+function getHuntStatus($user)
+{
+
     // STUDENT TODO:
     // Replace lines below with code to obtain details from the database
     //
+
+    $STH = connect();
+
+    $query =  $STH->prepare("SELECT H.status AS status, H.title AS name,
+    M.team AS team, H.startTime as start_time,
+           (P.duration/60) || ' hours and ' || (P.duration%60) || ' minutes' as elapsed,
+           P.score as score, P.currentWP as waypoint_count, W.clue as clue
+    FROM TreasureHunt.Hunt H
+      RIGHT OUTER JOIN TreasureHunt.Participates P ON (H.id=P.hunt)
+      RIGHT OUTER JOIN TreasureHunt.MemberOf M ON (M.team=P.team)
+      RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
+    WHERE M.player='?' AND M.current='true' AND P.currentWP=W.num;");
+
+    $queryName->bindParam(1, $user, PDO::PARAM_STR);
+
+    $query->execute();
+
+    $results->setFetchMode(PDO::FETCH_ASSOC);
+
 
     // Check $user exists in the database -- otherwise throw exception
     // $check_user_exists = pg_query("SELECT * FROM Player WHERE name='$user'");
@@ -235,16 +268,6 @@ function getHuntStatus($user) {
     // {
     //     throw new Exception('Unknown user.');
     // }
-
-    // $query = pg_query('SELECT H.status AS status, H.title AS name,
-    // M.team AS team, H.startTime as start_time,
-    //        (P.duration/60) || ' hours and ' || (P.duration%60) || ' minutes' as elapsed,
-    //        P.score as score, P.currentWP as waypoint_count, W.clue as clue
-    // FROM TreasureHunt.Hunt H
-    //   RIGHT OUTER JOIN TreasureHunt.Participates P ON (H.id=P.hunt)
-    //   RIGHT OUTER JOIN TreasureHunt.MemberOf M ON (M.team=P.team)
-    //   RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
-    // WHERE M.player='Yoda' AND M.current='true' AND P.currentWP=W.num;');
 
     // $results = array(
     //     'status'=>'in progress',
@@ -257,41 +280,41 @@ function getHuntStatus($user) {
     //     'clue'=>'Sit down and watch the ships go by with Mrs Macquarie'
     // );
 
-    	$conn = connect($file = 'config.ini');
-	
-	$query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
-		$team = pg_query($conn, $query);
-	$query = "SELECT hunt FROM Participates WHERE team = $team LIMIT 1";
-		$hunt = pg_query($conn, $query);
-	$query = "SELECT currentWP FROM Participates WHERE team = $team LIMIT 1";
-		$currentWP = pg_query($conn, $query);
-	$query = "SELECT status FROM Hunt WHERE id = $hunt";
-		$status = pg_query($conn, $query);
-	$query = "SELECT name FROM Hunt WHERE id = $hunt";
-		$name = pg_query($conn, $query);
-	$query = "SELECT score FROM participates WHERE team = $team LIMIT 1";
-		$score = pg_query($conn, $query);
-	$query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = $currentWP";
-		$clue = pg_query($conn, $query);
-	$query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-		$startTime = pg_query($conn, $query);
-	
+ //    	$conn = connect($file = 'config.ini');
+
+	// $query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
+	// 	$team = pg_query($conn, $query);
+	// $query = "SELECT hunt FROM Participates WHERE team = $team LIMIT 1";
+	// 	$hunt = pg_query($conn, $query);
+	// $query = "SELECT currentWP FROM Participates WHERE team = $team LIMIT 1";
+	// 	$currentWP = pg_query($conn, $query);
+	// $query = "SELECT status FROM Hunt WHERE id = $hunt";
+	// 	$status = pg_query($conn, $query);
+	// $query = "SELECT name FROM Hunt WHERE id = $hunt";
+	// 	$name = pg_query($conn, $query);
+	// $query = "SELECT score FROM participates WHERE team = $team LIMIT 1";
+	// 	$score = pg_query($conn, $query);
+	// $query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = $currentWP";
+	// 	$clue = pg_query($conn, $query);
+	// $query = "SELECT startTime FROM Hunt WHERE id = $hunt";
+	// 	$startTime = pg_query($conn, $query);
+
 
     //if ($user != 'testuser') throw new Exception('Unknown user');
-    $results = array(
-        'status'=>$status,
-        'name'=>$name,
-        'team'=>$team,
-        'start_time'=>$startTime,
-        //'elapsed'=>'4 hours', Need separate conditional table, only included if hunt status == active
-        'score'=>$score,
-        'waypoint_count'=>$currentWP	,
-        'clue'=>$clue
-    );
+    // $results = array(
+    //     'status'=>$status,
+    //     'name'=>$name,
+    //     'team'=>$team,
+    //     'start_time'=>$startTime,
+    //     //'elapsed'=>'4 hours', Need separate conditional table, only included if hunt status == active
+    //     'score'=>$score,
+    //     'waypoint_count'=>$currentWP	,
+    //     'clue'=>$clue
+    // );
 
     return $results;
 }
-	
+
 /**
  * Check validation code is for user's next expected waypoint
  * @param string $user
@@ -299,7 +322,8 @@ function getHuntStatus($user) {
  * @return array Various details of current visit - see validate.php
  * @throws Exception
  */
-function validateVisit($user,$code) {
+function validateVisit($user,$code)
+{
     // STUDENT TODO:
     // Replace lines below with code to obtain status from the database
     // (You could extend this to
