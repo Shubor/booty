@@ -89,77 +89,68 @@ function checkLogin($name,$pass)
  * @param string $user login name user
  * @return array Details of user - see index.php
  */
-function getUserDetails($user)
-{
+function getUserDetails($user) {
 
-  	//$conn = connect($file = 'config.ini');
-    $STH = connect();
-
-    $queryName =  $STH->prepare("SELECT P.name as name, P.addr as addr, M.team as curr
-                  FROM treasurehunt.Player P
-                  LEFT OUTER JOIN treasurehunt.memberOf M ON (P.name = M.player)
-                  WHERE P.name = ?");
-
-    $queryStat =  $STH->prepare("SELECT PS.stat_value as stat
-                  FROM treasurehunt.playerStats PS
-                  WHERE PS.player = ? AND PS.stat_name = 'finished_hunts'");
-
-    $queryBadge = $STH->prepare("SELECT A.badge as name, B.description as desc
-                                FROM treasurehunt.achievements A
-                                INNER JOIN treasurehunt.badge B ON (A.badge = B.name)
-                                WHERE A.player = ?");
+  //$conn = connect($file = 'config.ini');
+  $STH = connect();
 
 
-    $queryName->bindParam(1, $user, PDO::PARAM_STR);
-    $queryStat->bindParam(1, $user, PDO::PARAM_STR);
-    $queryBadge->bindParam(1, $user, PDO::PARAM_STR);
+  $queryName =  $STH->prepare("SELECT * FROM treasurehunt.dashboardName(?);");
 
-    $queryName->execute();
-    $queryStat->execute();
-    $queryBadge->execute();
+  $queryStat =  $STH->prepare("SELECT * FROM treasurehunt.huntCount(?);");
 
-    $queryName->setFetchMode(PDO::FETCH_ASSOC);
-    $queryStat->setFetchMode(PDO::FETCH_ASSOC);
-    $queryBadge->setFetchMode(PDO::FETCH_ASSOC);
-
-    $resultName = $queryName->fetch();
-    $resultStat = $queryStat->fetch();
-    $resultBadge = $queryBadge->fetchAll();
-
-    // print_r($resultBadge);
+  $queryBadge = $STH->prepare("SELECT * FROM treasurehunt.getBadges(?);");
 
 
-  	/*$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
-  		$name = pg_fetch_row(pg_query($conn, $query));
-  	$query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
-  		$addr = pg_query($conn, $query);
-  	$query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
-  		$team = pg_query($conn, $query);
-  	$query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
-  		$nhunts = pg_query($conn, $query);*/
+  $queryName->bindParam(1, $user, PDO::PARAM_STR);
+  $queryStat->bindParam(1, $user, PDO::PARAM_STR);
+  $queryBadge->bindParam(1, $user, PDO::PARAM_STR);
+
+  $queryName->execute();
+  $queryStat->execute();
+  $queryBadge->execute();
+
+  $queryName->setFetchMode(PDO::FETCH_ASSOC);
+  $queryStat->setFetchMode(PDO::FETCH_ASSOC);
+  $queryBadge->setFetchMode(PDO::FETCH_ASSOC);
+
+  $resultName = $queryName->fetch();
+  $resultStat = $queryStat->fetch();
+  $resultBadge = $queryBadge->fetchAll();
 
 
-    $results = array();
-    // Example user data - this should come from a query
-    $results['name'] = $resultName['name'];
-    $results['address'] = $resultName['addr'];
-    $results['team'] = $resultName['curr'];
-    $results['nhunts'] =$resultStat['stat'];
-    $results['badges'] = $resultBadge;
+  /*$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
+    $name = pg_fetch_row(pg_query($conn, $query));
+  $query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
+    $addr = pg_query($conn, $query);
+  $query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
+    $team = pg_query($conn, $query);
+  $query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
+    $nhunts = pg_query($conn, $query);*/
+  
+  
+  $results = array();
+  // Example user data - this should come from a query
+  $results['name'] = $resultName['name'];
+  $results['address'] = $resultName['addr'];
+  $results['team'] = $resultName['curr'];
+  $results['nhunts'] =$resultStat['stat'];
+  $results['badges'] = $resultBadge;
 
-    // array(
-    //   array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
-    //   array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
-    //   array('desc'=>'Last player to complete a hunt', 'name'=>'Peg Leg', 'quantity'=>2),
-    //   array('desc'=>'First player to complete a hunt', 'name'=>'Gold Medal'),
-    //   array('desc'=>'Second player to complete a hunt', 'name'=>'Silver Medal'),
-    //   array('desc'=>'Third player to complete a hunt', 'name'=>'Bronze Medal', 'quantity'=>3),
-    //   array('desc'=>'Visited locations out of order in a hunt', 'name'=>'Broken Compass', 'quantity'=>2),
-    //   array('desc'=>'Visited a location from the wrong hunt', 'name'=>'Crossed Paths')
-    // );
+  // array(
+  //   array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
+  //   array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
+  //   array('desc'=>'Last player to complete a hunt', 'name'=>'Peg Leg', 'quantity'=>2),
+  //   array('desc'=>'First player to complete a hunt', 'name'=>'Gold Medal'),
+  //   array('desc'=>'Second player to complete a hunt', 'name'=>'Silver Medal'),
+  //   array('desc'=>'Third player to complete a hunt', 'name'=>'Bronze Medal', 'quantity'=>3),
+  //   array('desc'=>'Visited locations out of order in a hunt', 'name'=>'Broken Compass', 'quantity'=>2),
+  //   array('desc'=>'Visited a location from the wrong hunt', 'name'=>'Crossed Paths')
+  // );
 
-    return $results;
+  return $results;
 }
+
 
 /**
  * List hunts that are currently available
