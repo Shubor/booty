@@ -18,7 +18,7 @@ try {
     echo '<tr><td><b>Hunts Played</b></td> <td>',$details['nhunts'],'</td></tr>';
     echo '<tr><td><b>Badges</b></td> <td>';
     foreach($details['badges'] as $badge) {
-        echo '<span class="badge" title="',$badge['desc'],'">',$badge['name'],'</span><br />';
+        echo '<span class="badge" title="',$badge['descrip'],'">',$badge['name'],'</span><br />';
     }
     echo '</td></tr>';
     echo '</table>';
