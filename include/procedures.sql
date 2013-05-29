@@ -1,3 +1,15 @@
+BEGIN TRANSACTION;
+  DROP FUNCTION IF EXISTS TreasureHunt.dashboardName(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.huntCount(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.getBadges(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.getHuntStatus(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.getUserStatistics(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.getAvailableHunts();
+  DROP FUNCTION IF EXISTS TreasureHunt.getHuntDetails(integer);
+  DROP FUNCTION IF EXISTS TreasureHunt.getParticipateCount(integer);
+  DROP FUNCTION IF EXISTS TreasureHunt.checkLogin(varchar, varchar);
+COMMIT;
+
 CREATE OR REPLACE FUNCTION treasureHunt.dashboardName(varchar)
 RETURNS TABLE(name varchar, addr varchar, curr varchar) AS $body$
 DECLARE
@@ -65,3 +77,51 @@ BEGIN
   ORDER BY stat_name ASC;
 END;
 $BODY$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION treasureHunt.getAvailableHunts()
+RETURNS TABLE(identi integer, name varchar, start timestamp without time zone, distance integer, nwaypoints integer)
+AS $body$
+BEGIN
+  RETURN QUERY SELECT H.id as identi, H.title AS name, H.startTime as start, H.distance, H.numWayPoints AS nwaypoints 
+  FROM TreasureHunt.Hunt H 
+  WHERE status = 'open'
+  ORDER BY H.title ASC;
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION treasureHunt.getHuntDetails(integer)
+RETURNS TABLE(identi integer, name varchar, descrip text, distance integer, start timestamp without time zone, n_wp integer) AS
+$body$
+DECLARE 
+  huntId ALIAS FOR $1;
+BEGIN
+  RETURN QUERY SELECT H.id as identi, H.title AS name, H.description AS descrip, H.distance, H.startTime AS start, H.numWayPoints AS n_wp 
+  FROM TreasureHunt.Hunt H
+  WHERE id = huntId;
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION treasureHunt.getParticipateCount(integer)
+RETURNS TABLE(nteams bigint) AS
+$body$
+DECLARE
+  huntId ALIAS FOR $1;
+BEGIN
+  RETURN QUERY SELECT count(*) AS nteams 
+  FROM TreasureHunt.Participates 
+  WHERE hunt = huntId;
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION checkLogin(varchar, varchar)
+RETURNS TABLE(name varchar) AS
+$body$
+DECLARE
+  playerName ALIAS FOR $1;
+  passwd ALIAS FOR $2;
+BEGIN
+  RETURN QUERY SELECT playerName
+  FROM treasurehunt.Player AS p 
+  WHERE p.name = playerName AND p.password = passwd LIMIT 1;
+END;
+$body$ LANGUAGE plpgsql;

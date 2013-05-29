@@ -34,7 +34,6 @@ try {
 
 } catch (Exception $e) {
     echo 'Cannot get user details';
-    echo $e;
 }
 htmlFoot();
 ?>

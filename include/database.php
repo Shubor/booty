@@ -65,9 +65,9 @@ function checkLogin($name,$pass)
         // $salt->fetch();
         // $hash_password = crypt($pass);
 
-        $query = $STH->prepare("SELECT name FROM treasurehunt.Player AS p WHERE p.name = :name AND p.password = :passwd LIMIT 1");
-        $query->bindValue(':name', $name, PDO::PARAM_INT);
-        $query->bindValue(':passwd', $pass, PDO::PARAM_STR);
+        $query = $STH->prepare("SELECT * FROM checkLogin(?,?);");
+        $query->bindValue(1, $name, PDO::PARAM_INT);
+        $query->bindValue(2, $pass, PDO::PARAM_STR);
         $query->execute();
 
         if ($query->fetch())
@@ -133,8 +133,7 @@ function getAvailableHunts()
     handled by the connect function*/
     $STH = connect();
 
-    $query = $STH->prepare("SELECT id, title AS name, startTime as start, distance, numWayPoints AS nwaypoints FROM TreasureHunt.Hunt WHERE status = 'open'");
-
+    $query = $STH->prepare("SELECT * FROM treasurehunt.getAvailableHunts();");    
     $query->execute();
     $results = $query->fetchAll();
 
@@ -154,10 +153,10 @@ function getHuntDetails($hunt)
 
     $STH = connect();
 
-    $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
+    // $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
 
-    $query_one = $STH->prepare("SELECT title AS name, description AS descrip, distance, startTime AS start, numWayPoints AS n_wp FROM TreasureHunt.Hunt WHERE id = ?");
-    $query_two = $STH->prepare("SELECT count(*) AS nteams FROM TreasureHunt.Participates WHERE hunt = ?");
+    $query_one = $STH->prepare("SELECT * FROM getHuntDetails(?);");
+    $query_two = $STH->prepare("SELECT * FROM getParticipateCount(?);");
 
     $query_one->bindParam(1, $hunt, PDO::PARAM_STR);
     $query_two->bindParam(1, $hunt, PDO::PARAM_STR);
