@@ -67,7 +67,7 @@ function checkLogin($name,$pass)
 
         $query = $STH->prepare("SELECT name FROM treasurehunt.Player AS p WHERE p.name = :name AND p.password = :passwd LIMIT 1");
         $query->bindValue(':name', $name, PDO::PARAM_INT);
-        $query->bindValue('passwd', $pass, PDO::PARAM_STR);
+        $query->bindValue(':passwd', $pass, PDO::PARAM_STR);
         $query->execute();
 
         if ($query->fetch())
@@ -129,14 +129,29 @@ function getUserDetails($user) {
  */
 function getAvailableHunts()
 {
+
+    //ist all available (not under construction) hunts in alphabetical order
+
     // STUDENT TODO:
     // Replace lines below with code to get list of available hunts from the database
     // Example hunt info - this should come from a query
-    $results = array(
-        array('id'=>1234,'name'=>'Harbour Havoc','start'=>'9am 10/2/13','distance'=>'10 km','nwaypoints'=>5),
-        array('id'=>4563,'name'=>'Lost in Lane Cove','start'=>'5pm 1/3/13','distance'=>'2 km','nwaypoints'=>8),
-        array('id'=>7789,'name'=>'Paramatta River Trail','start'=>'9am 4/3/13','distance'=>'8 km','nwaypoints'=>5)
-    );
+    // $results = array(
+    //     array('id'=>1234,'name'=>'Harbour Havoc','start'=>'9am 10/2/13','distance'=>'10 km','nwaypoints'=>5),
+    //     array('id'=>4563,'name'=>'Lost in Lane Cove','start'=>'5pm 1/3/13','distance'=>'2 km','nwaypoints'=>8),
+    //     array('id'=>7789,'name'=>'Paramatta River Trail','start'=>'9am 4/3/13','distance'=>'8 km','nwaypoints'=>5)
+    // );
+
+    $STH = connect();
+    $query = $STH->prepare("SELECT * FROM TreasureHunt.Hunt WHERE status = 'open'");
+    $query->execute();
+
+    $results = array();
+
+    for ($i = 0; $i < $query->rowCount(); $i++)
+    {
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        $results['$i'] = $result;
+    }
 
     return $results;
 }
