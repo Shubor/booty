@@ -129,7 +129,7 @@ function getUserDetails($user) {
  */
 function getAvailableHunts()
 {
-    /*All attempted connections, if they fail are error 
+    /*All attempted connections, if they fail are error
     handled by the connect function*/
     $STH = connect();
 
@@ -155,9 +155,6 @@ function getHuntDetails($hunt)
     $STH = connect();
 
     $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
-    // $exists = pg_query($conn, $query);
-    // if ($exists = 0) throw new Exception('Unknown hunt.');
-
 
     $query_one = $STH->prepare("SELECT title AS name, description AS descrip, distance, startTime AS start, numWayPoints AS n_wp FROM TreasureHunt.Hunt WHERE id = ?");
     $query_two = $STH->prepare("SELECT count(*) AS nteams FROM TreasureHunt.Participates WHERE hunt = ?");
@@ -201,13 +198,9 @@ function getHuntStatus($user)
     $STH = connect();
 
     $query =  $STH->prepare("SELECT * FROM treasurehunt.getHuntStatus(?);");
-
     $query->bindParam(1, $user, PDO::PARAM_STR);
-
     $query->execute();
-
     $query->setFetchMode(PDO::FETCH_ASSOC);
-
     $resultHunt = $query->fetch();
 
     $results = array(
@@ -221,24 +214,6 @@ function getHuntStatus($user)
         'waypoint_count'=>$resultHunt['waypoint_count'] ,
         'clue'=>$resultHunt['clue']
     );
-
-    // Check $user exists in the database -- otherwise throw exception
-    // $check_user_exists = pg_query("SELECT * FROM Player WHERE name='$user'");
-    // if (pg_num_rows($check_user_exists) = 0)
-    // {
-    //     throw new Exception('Unknown user.');
-    // }
-
-    // $results = array(
-    //     'status'=>'in progress',
-    //     'name'=>'Harbour Havoc',
-    //     'team'=>'Lily-livered landlubbers',
-    //     'start_time'=>'9am 10/2/13',
-    //     'elapsed'=>'4 hours',
-    //     'score'=>'3564',
-    //     'waypoint_count'=>5,
-    //     'clue'=>'Sit down and watch the ships go by with Mrs Macquarie'
-    // );
 
     return $results;
 }
