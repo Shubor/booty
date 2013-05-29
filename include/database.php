@@ -142,16 +142,19 @@ function getAvailableHunts()
     // );
 
     $STH = connect();
-    $query = $STH->prepare("SELECT * FROM TreasureHunt.Hunt WHERE status = 'open'");
+    $query = $STH->prepare("SELECT id, title AS name, startTime as start, distance, numWayPoints AS nwaypoints FROM TreasureHunt.Hunt WHERE status = 'open'");
+
     $query->execute();
+    $results = $query->fetchAll();
 
-    $results = array();
+    // print_r($result);
 
-    for ($i = 0; $i < $query->rowCount(); $i++)
-    {
-        $result = $query->fetch(PDO::FETCH_ASSOC);
-        $results['$i'] = $result;
-    }
+    // for ($i = 0; $i < $query->rowCount(); $i++)
+    // {
+    //     $result = $query->fetch(PDO::FETCH_ASSOC);
+    //     $result['id']
+    //     $results['$i'] = $result;
+    // }
 
     return $results;
 }
