@@ -11,7 +11,7 @@ htmlHead();
 <?php
 try {
     $hunt = getHuntStatus($_SESSION['player']);
-    if($hunt['status']=='in progress') {
+    if($hunt['status']=='active') {
         echo '<table class="table">';
         echo '<tr><td><b>Hunt Name</b></td> <td>',$hunt['name'],'</td></tr>';
         echo '<tr><td><b>Playing in Team</b></td> <td>',$hunt['team'],'</td></tr>';
@@ -34,6 +34,7 @@ try {
         echo '<tr><td><b>Final Score</b></td> <td>',$hunt['score'],'</td></tr>';
         echo '</table>';
     } else {
+        print_r($hunt);
         echo 'No hunt history.';
     }
 } catch (Exception $e) {

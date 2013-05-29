@@ -244,7 +244,9 @@ function getHuntStatus($user)
 
     $query->execute();
 
-    $results = $query->setFetchMode(PDO::FETCH_ASSOC);
+    $query->setFetchMode(PDO::FETCH_ASSOC);
+
+    $resultHunt = $query->fetch();
 
 
     // Check $user exists in the database -- otherwise throw exception
@@ -285,17 +287,17 @@ function getHuntStatus($user)
 	// 	$startTime = pg_query($conn, $query);
 
 
-    //if ($user != 'testuser') throw new Exception('Unknown user');
-    // $results = array(
-    //     'status'=>$status,
-    //     'name'=>$name,
-    //     'team'=>$team,
-    //     'start_time'=>$startTime,
-    //     //'elapsed'=>'4 hours', Need separate conditional table, only included if hunt status == active
-    //     'score'=>$score,
-    //     'waypoint_count'=>$currentWP	,
-    //     'clue'=>$clue
-    // );
+    $results = array(
+        'status'=>$resultHunt['status'],
+        'name'=>$resultHunt['name'],
+        'team'=>$resultHunt['team'],
+        'start_time'=>$resultHunt['start_time'],
+        'elapsed'=>$resultHunt['elapsed'],
+        //Need separate conditional table, only included if hunt status == active
+        'score'=>$resultHunt['score'],
+        'waypoint_count'=>$resultHunt['waypoint_count']	,
+        'clue'=>$resultHunt['clue']
+    );
 
     return $results;
 }
