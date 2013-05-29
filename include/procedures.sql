@@ -32,3 +32,24 @@ BEGIN
   WHERE A.player = playerName;
 END;
 $body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION treasurehunt.getHuntStatus(varchar)
+RETURNS TABLE(status varchar, name varchar, team varchar, 
+              start_time timestamp without time zone, elapsed text, 
+              score integer, waypoint_count smallint, clue text) AS $body$
+DECLARE
+  playerName ALIAS FOR $1;
+BEGIN
+  RETURN QUERY SELECT H.status AS status, H.title AS name,
+      M.team AS team, H.startTime as start_time,
+      (extract (epoch from (now() - starttime))/60)::integer 
+      || ' hours and ' || (extract (epoch from (now() - starttime))/60)::integer%60 
+      || ' minute(s)' as elapsed,
+      P.score as score, P.currentWP as waypoint_count, W.clue as clue
+    FROM TreasureHunt.Hunt H
+      RIGHT OUTER JOIN TreasureHunt.Participates P ON (H.id=P.hunt)
+      RIGHT OUTER JOIN TreasureHunt.MemberOf M ON (M.team=P.team)
+      RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
+    WHERE M.player=playerName AND M.current='true' AND P.currentWP=W.num;
+END;
+$body$ LANGUAGE plpgsql;

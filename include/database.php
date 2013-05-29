@@ -215,15 +215,7 @@ function getHuntStatus($user)
 
     $STH = connect();
 
-    $query =  $STH->prepare("SELECT H.status AS status, H.title AS name,
-          M.team AS team, H.startTime as start_time,
-          (P.duration/60) || ' hours and ' || (P.duration%60) || ' minutes' as elapsed,
-          P.score as score, P.currentWP as waypoint_count, W.clue as clue
-    FROM TreasureHunt.Hunt H
-      RIGHT OUTER JOIN TreasureHunt.Participates P ON (H.id=P.hunt)
-      RIGHT OUTER JOIN TreasureHunt.MemberOf M ON (M.team=P.team)
-      RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
-    WHERE M.player=? AND M.current='true' AND P.currentWP=W.num;");
+    $query =  $STH->prepare("SELECT * FROM treasurehunt.getHuntStatus(?);");
 
     $query->bindParam(1, $user, PDO::PARAM_STR);
 
