@@ -311,20 +311,68 @@ function getHuntStatus($user)
  */
 function validateVisit($user,$code)
 {
+	 $STH = connect();
+
+	 
+	   
     // STUDENT TODO:
     // Replace lines below with code to obtain status from the database
     // (You could extend this to
-    if ($user != 'testuser') throw new Exception('Unknown user');
-    if ($code != '1234') {
+	
+	// Find Required Code
+	// Test required vs input code
+	// If wrong return invalid
+	// Else return 'correct' 'current_rank' 'current_score' and next clue
+	
+	
+	//IN PROGRESS TODO: Revise queries into one or two queries
+	// 		Implement rank checking
+	//		Increment Score on correct visit
+	//		Check if incorrect waypoint is in another hunt or in the wrong order
+	 $query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
+	 $team = pg_query($conn, $query);
+	
+	 $query = "SELECT hunt FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 $hunt = pg_query($conn, $query);
+	 
+	 $query = "SELECT currentWP FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 $currentWP_num = pg_query($conn, $query);
+	 
+	 $query = "SELECT rank FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 $rank = pg_query($conn, $query); //Test if rank increases in later query, placeholder
+	 
+	 $query = "SELECT score FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 $score = pg_query($conn, $query); //Score increase
+	
+	 $query = "SELECT verification_code FROM Waypoint WHERE hunt = $hunt AND num = $currentWP_num";
+	 $ver_code = pg_query($conn, $query); 
+	
+	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
+	$num_waypoints =  pg_query($conn, $query);
+	
+    if ($code != $ver_code) {
         // Wrong code - could also check whether the code is for another waypoint)
         return array (
             'status'=>'invalid'
         );
-    } else return array(
+    } else { //test if last waypoint, test rank
+		
+		if ($currentWP_num = $num_waypoints) { // Tests if last waypoint, no clue returned
+			return array(
             'status'=>'correct',
-            'rank'=>2,
-            'score'=>6348,
-            'clue'=>'GPS 123.43, 1245.434'
+            'rank'=>$rank,
+            'score'=>$score,
         );
+		
+		}
+		$query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
+		$clue = pg_query($conn, $query); 
+		return array(
+            'status'=>'correct',
+            'rank'=>$rank,
+            'score'=>$score,
+            'clue'=>$clue
+        );
+	}
 }
 ?>
