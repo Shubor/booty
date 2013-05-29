@@ -238,13 +238,13 @@ function getHuntStatus($user)
       RIGHT OUTER JOIN TreasureHunt.Participates P ON (H.id=P.hunt)
       RIGHT OUTER JOIN TreasureHunt.MemberOf M ON (M.team=P.team)
       RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
-    WHERE M.player='?' AND M.current='true' AND P.currentWP=W.num;");
+    WHERE M.player=? AND M.current='true' AND P.currentWP=W.num;");
 
     $query->bindParam(1, $user, PDO::PARAM_STR);
 
     $query->execute();
 
-    $results->setFetchMode(PDO::FETCH_ASSOC);
+    $results = $query->setFetchMode(PDO::FETCH_ASSOC);
 
 
     // Check $user exists in the database -- otherwise throw exception
