@@ -129,32 +129,14 @@ function getUserDetails($user) {
  */
 function getAvailableHunts()
 {
-
-    //ist all available (not under construction) hunts in alphabetical order
-
-    // STUDENT TODO:
-    // Replace lines below with code to get list of available hunts from the database
-    // Example hunt info - this should come from a query
-    // $results = array(
-    //     array('id'=>1234,'name'=>'Harbour Havoc','start'=>'9am 10/2/13','distance'=>'10 km','nwaypoints'=>5),
-    //     array('id'=>4563,'name'=>'Lost in Lane Cove','start'=>'5pm 1/3/13','distance'=>'2 km','nwaypoints'=>8),
-    //     array('id'=>7789,'name'=>'Paramatta River Trail','start'=>'9am 4/3/13','distance'=>'8 km','nwaypoints'=>5)
-    // );
-
+    /*All attempted connections, if they fail are error 
+    handled by the connect function*/
     $STH = connect();
+
     $query = $STH->prepare("SELECT id, title AS name, startTime as start, distance, numWayPoints AS nwaypoints FROM TreasureHunt.Hunt WHERE status = 'open'");
 
     $query->execute();
     $results = $query->fetchAll();
-
-    // print_r($result);
-
-    // for ($i = 0; $i < $query->rowCount(); $i++)
-    // {
-    //     $result = $query->fetch(PDO::FETCH_ASSOC);
-    //     $result['id']
-    //     $results['$i'] = $result;
-    // }
 
     return $results;
 }
@@ -173,8 +155,8 @@ function getHuntDetails($hunt)
     $STH = connect();
 
     $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
-    $exists = pg_query($conn, $query);
-    if ($exists = 0) throw new Exception('Unknown hunt.');
+    // $exists = pg_query($conn, $query);
+    // if ($exists = 0) throw new Exception('Unknown hunt.');
 
 
     $query_one = $STH->prepare("SELECT title AS name, description AS descrip, distance, startTime AS start, numWayPoints AS n_wp FROM TreasureHunt.Hunt WHERE id = ?");
@@ -189,8 +171,8 @@ function getHuntDetails($hunt)
     $query_one->setFetchMode(PDO::FETCH_ASSOC);
     $query_two->setFetchMode(PDO::FETCH_ASSOC);
 
-    $results_one->fetch();
-    $results_two->fetch();
+    $results_one = $query_one->fetch();
+    $results_two = $query_two->fetch();
 
     $results = array();
 
