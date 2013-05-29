@@ -12,13 +12,13 @@ htmlHead();
 try {
     $details = getUserDetails($_SESSION['player']);
     echo '<table class="table">';
-    echo '<tr><td><b>Name</b></td> <td>','<a href="stats.php">'.$details['name'].'</a>','</td></tr>';
+    echo '<tr><td><b>Name</b></td> <td><a href="stats.php">',$details['name'],'</a></td></tr>';
     echo '<tr><td><b>Address</b></td> <td>',$details['address'],'</td></tr>';
     echo '<tr><td><b>Current Team</b></td> <td>',$details['team'],'</td></tr>';
     echo '<tr><td><b>Hunts Played</b></td> <td>',$details['nhunts'],'</td></tr>';
     echo '<tr><td><b>Badges</b></td> <td>';
     foreach($details['badges'] as $badge) {
-        echo '<span class="badge" title="',$badge['descrip'],'">',$badge['name'],'</span><br />';
+        echo '<span class="badge badge-success" title="',$badge['descrip'],'">',$badge['name'],'</span><br />';
     }
     echo '</td></tr>';
     echo '</table>';

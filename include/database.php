@@ -317,6 +317,11 @@ function getUserStatistics($user)
 {
     $STH = connect();
 
-    $queryStats = $STH->prepare("SELECT * FROM ");
+    $queryStats = $STH->prepare("SELECT * FROM getUserStatistics(?);");
+    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+    $queryStats->execute();
+    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+    $results = $queryStats->fetchAll();
+    return $results;
 }
 ?>
