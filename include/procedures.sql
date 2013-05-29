@@ -42,7 +42,7 @@ DECLARE
 BEGIN
   RETURN QUERY SELECT H.status AS status, H.title AS name,
       M.team AS team, H.startTime as start_time,
-      (extract (epoch from (now() - starttime))/60)::integer 
+      (extract (epoch from (now() - starttime))/3600)::integer 
       || ' hours and ' || (extract (epoch from (now() - starttime))/60)::integer%60 
       || ' minute(s)' as elapsed,
       P.score as score, P.currentWP as waypoint_count, W.clue as clue
