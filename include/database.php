@@ -46,7 +46,6 @@ function checkLogin($name,$pass)
 {
     // STUDENT TODO:
     // Replace line below with code to validate details from the database
-    //
 
     //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
     $STH = connect();
@@ -89,16 +88,11 @@ function checkLogin($name,$pass)
  */
 function getUserDetails($user) {
 
-  //$conn = connect($file = 'config.ini');
   $STH = connect();
 
-
   $queryName =  $STH->prepare("SELECT * FROM treasurehunt.dashboardName(?);");
-
   $queryStat =  $STH->prepare("SELECT * FROM treasurehunt.huntCount(?);");
-
   $queryBadge = $STH->prepare("SELECT * FROM treasurehunt.getBadges(?);");
-
 
   $queryName->bindParam(1, $user, PDO::PARAM_STR);
   $queryStat->bindParam(1, $user, PDO::PARAM_STR);
@@ -116,35 +110,13 @@ function getUserDetails($user) {
   $resultStat = $queryStat->fetch();
   $resultBadge = $queryBadge->fetchAll();
 
-
-  /*$query = "SELECT name FROM treasurehunt.Player as p WHERE p.name = '" . $user . "'";
-    $name = pg_fetch_row(pg_query($conn, $query));
-  $query = "SELECT address FROM treasurehunt.Player WHERE name = $user";
-    $addr = pg_query($conn, $query);
-  $query = "SELECT curr FROM treasurehunt.memberOf WHERE name = $user LIMIT 1";
-    $team = pg_query($conn, $query);
-  $query = "SELECT stat_value FROM treasurehunt.PlayerStats WHERE player = $user AND stat_name = 'Number of Hunts'";
-    $nhunts = pg_query($conn, $query);*/
-
-
   $results = array();
-  // Example user data - this should come from a query
+
   $results['name'] = $resultName['name'];
   $results['address'] = $resultName['addr'];
   $results['team'] = $resultName['curr'];
   $results['nhunts'] =$resultStat['stat'];
   $results['badges'] = $resultBadge;
-
-  // array(
-  //   array('desc'=>'Completed more than 10 hunts', 'name'=>'Veteran Treasure Hunter'),
-  //   array('desc'=>'1st visitor to 50% of locations in a hunt', 'name'=>'Yellow Jersey', 'quantity'=>3),
-  //   array('desc'=>'Last player to complete a hunt', 'name'=>'Peg Leg', 'quantity'=>2),
-  //   array('desc'=>'First player to complete a hunt', 'name'=>'Gold Medal'),
-  //   array('desc'=>'Second player to complete a hunt', 'name'=>'Silver Medal'),
-  //   array('desc'=>'Third player to complete a hunt', 'name'=>'Bronze Medal', 'quantity'=>3),
-  //   array('desc'=>'Visited locations out of order in a hunt', 'name'=>'Broken Compass', 'quantity'=>2),
-  //   array('desc'=>'Visited a location from the wrong hunt', 'name'=>'Crossed Paths')
-  // );
 
   return $results;
 }
@@ -177,9 +149,6 @@ function getAvailableHunts()
  */
 function getHuntDetails($hunt)
 {
-
-	   // $conn = connect($file = 'config.ini');
-
     // STUDENT TODO:
     // Replace lines below with code to get details of a hunt from the database
 
@@ -189,28 +158,30 @@ function getHuntDetails($hunt)
     $exists = pg_query($conn, $query);
     if ($exists = 0) throw new Exception('Unknown hunt.');
 
-    // Example hunt details - this should come from a query
 
-  	// $query = "SELECT title FROM Hunt WHERE id = $hunt";
-  	// 	$name = pg_query($conn, $query);
-  	// $query = "SELECT description FROM Hunt WHERE id = $hunt";
-  	// 	$desc = pg_query($conn, $query);
-  	// $query = "SELECT count(*) FROM Participates WHERE hunt = $hunt";
-  	// 	$nteams = pg_query($conn, $query);
-  	// $query = "SELECT distance FROM Hunt WHERE id = $hunt";
-  	// 	$dist = pg_query($conn, $query);
-  	// $query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-  	// 	$desc = pg_query($conn, $query);
-  	// $query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-  	// 	$start = pg_query($conn, $query);
-  	// $query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
-  	// 	$n_wp = pg_query($conn, $query);
+    $query_one = $STH->prepare("SELECT title AS name, description AS descrip, distance, startTime AS start, numWayPoints AS n_wp FROM TreasureHunt.Hunt WHERE id = ?");
+    $query_two = $STH->prepare("SELECT count(*) AS nteams FROM TreasureHunt.Participates WHERE hunt = ?");
 
-    $query = $STH->prepare("SELECT title AS name, description AS desc, /*count*/ distance, startTime AS start, numWayPoints AS n_wp FROM TreasureHunt.Hunt WHERE id = ?");
-    $query->bindParam(1, $hunt, PDO::PARAM_STR);
-    $query->execute();
+    $query_one->bindParam(1, $hunt, PDO::PARAM_STR);
+    $query_two->bindParam(1, $hunt, PDO::PARAM_STR);
 
-    $results->setFetchMode(PDO::FETCH_ASSOC);
+    $query_one->execute();
+    $query_two->execute();
+
+    $query_one->setFetchMode(PDO::FETCH_ASSOC);
+    $query_two->setFetchMode(PDO::FETCH_ASSOC);
+
+    $results_one->fetch();
+    $results_two->fetch();
+
+    $results = array();
+
+    $results['name'] = $results_one['name'];
+    $results['descrip'] = $results_one['descrip'];
+    $results['start'] = $results_one['start'];
+    $results['distance'] = $results_one['distance'];
+    $results['nteams'] = $results_two['nteams'];
+    $results['n_wp'] = $results_one['n_wp'];
 
     return $results;
 }
@@ -231,9 +202,9 @@ function getHuntStatus($user)
     $STH = connect();
 
     $query =  $STH->prepare("SELECT H.status AS status, H.title AS name,
-    M.team AS team, H.startTime as start_time,
-           (P.duration/60) || ' hours and ' || (P.duration%60) || ' minutes' as elapsed,
-           P.score as score, P.currentWP as waypoint_count, W.clue as clue
+          M.team AS team, H.startTime as start_time,
+          (P.duration/60) || ' hours and ' || (P.duration%60) || ' minutes' as elapsed,
+          P.score as score, P.currentWP as waypoint_count, W.clue as clue
     FROM TreasureHunt.Hunt H
       RIGHT OUTER JOIN TreasureHunt.Participates P ON (H.id=P.hunt)
       RIGHT OUTER JOIN TreasureHunt.MemberOf M ON (M.team=P.team)
@@ -248,6 +219,17 @@ function getHuntStatus($user)
 
     $resultHunt = $query->fetch();
 
+    $results = array(
+        'status'=>$resultHunt['status'],
+        'name'=>$resultHunt['name'],
+        'team'=>$resultHunt['team'],
+        'start_time'=>$resultHunt['start_time'],
+        'elapsed'=>$resultHunt['elapsed'],
+        // Need separate conditional table, only included if hunt status == active
+        'score'=>$resultHunt['score'],
+        'waypoint_count'=>$resultHunt['waypoint_count'] ,
+        'clue'=>$resultHunt['clue']
+    );
 
     // Check $user exists in the database -- otherwise throw exception
     // $check_user_exists = pg_query("SELECT * FROM Player WHERE name='$user'");
@@ -267,38 +249,6 @@ function getHuntStatus($user)
     //     'clue'=>'Sit down and watch the ships go by with Mrs Macquarie'
     // );
 
- //    	$conn = connect($file = 'config.ini');
-
-	// $query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
-	// 	$team = pg_query($conn, $query);
-	// $query = "SELECT hunt FROM Participates WHERE team = $team LIMIT 1";
-	// 	$hunt = pg_query($conn, $query);
-	// $query = "SELECT currentWP FROM Participates WHERE team = $team LIMIT 1";
-	// 	$currentWP = pg_query($conn, $query);
-	// $query = "SELECT status FROM Hunt WHERE id = $hunt";
-	// 	$status = pg_query($conn, $query);
-	// $query = "SELECT name FROM Hunt WHERE id = $hunt";
-	// 	$name = pg_query($conn, $query);
-	// $query = "SELECT score FROM participates WHERE team = $team LIMIT 1";
-	// 	$score = pg_query($conn, $query);
-	// $query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = $currentWP";
-	// 	$clue = pg_query($conn, $query);
-	// $query = "SELECT startTime FROM Hunt WHERE id = $hunt";
-	// 	$startTime = pg_query($conn, $query);
-
-
-    $results = array(
-        'status'=>$resultHunt['status'],
-        'name'=>$resultHunt['name'],
-        'team'=>$resultHunt['team'],
-        'start_time'=>$resultHunt['start_time'],
-        'elapsed'=>$resultHunt['elapsed'],
-        //Need separate conditional table, only included if hunt status == active
-        'score'=>$resultHunt['score'],
-        'waypoint_count'=>$resultHunt['waypoint_count']	,
-        'clue'=>$resultHunt['clue']
-    );
-
     return $results;
 }
 
@@ -313,60 +263,58 @@ function validateVisit($user,$code)
 {
 	 $STH = connect();
 
-	 
-	   
     // STUDENT TODO:
     // Replace lines below with code to obtain status from the database
     // (You could extend this to
-	
+
 	// Find Required Code
 	// Test required vs input code
 	// If wrong return invalid
 	// Else return 'correct' 'current_rank' 'current_score' and next clue
-	
-	
+
+
 	//IN PROGRESS TODO: Revise queries into one or two queries
 	// 		Implement rank checking
 	//		Increment Score on correct visit
 	//		Check if incorrect waypoint is in another hunt or in the wrong order
-	 $query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
+	$query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
 	 $team = pg_query($conn, $query);
-	
+
 	 $query = "SELECT hunt FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
 	 $hunt = pg_query($conn, $query);
-	 
+
 	 $query = "SELECT currentWP FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
 	 $currentWP_num = pg_query($conn, $query);
-	 
+
 	 $query = "SELECT rank FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
 	 $rank = pg_query($conn, $query); //Test if rank increases in later query, placeholder
-	 
+
 	 $query = "SELECT score FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
 	 $score = pg_query($conn, $query); //Score increase
-	
+
 	 $query = "SELECT verification_code FROM Waypoint WHERE hunt = $hunt AND num = $currentWP_num";
-	 $ver_code = pg_query($conn, $query); 
-	
+	 $ver_code = pg_query($conn, $query);
+
 	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
 	$num_waypoints =  pg_query($conn, $query);
-	
+
     if ($code != $ver_code) {
         // Wrong code - could also check whether the code is for another waypoint)
         return array (
             'status'=>'invalid'
         );
     } else { //test if last waypoint, test rank
-		
+
 		if ($currentWP_num = $num_waypoints) { // Tests if last waypoint, no clue returned
 			return array(
             'status'=>'correct',
             'rank'=>$rank,
             'score'=>$score,
         );
-		
+
 		}
 		$query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
-		$clue = pg_query($conn, $query); 
+		$clue = pg_query($conn, $query);
 		return array(
             'status'=>'correct',
             'rank'=>$rank,
