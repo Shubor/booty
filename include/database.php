@@ -197,7 +197,6 @@ function getHuntStatus($user)
 
     // STUDENT TODO:
     // Replace lines below with code to obtain details from the database
-    //
 
     $STH = connect();
 
@@ -261,44 +260,67 @@ function getHuntStatus($user)
  */
 function validateVisit($user,$code)
 {
-	 $STH = connect();
+  	$STH = connect();
 
     // STUDENT TODO:
     // Replace lines below with code to obtain status from the database
     // (You could extend this to
 
-	// Find Required Code
-	// Test required vs input code
-	// If wrong return invalid
-	// Else return 'correct' 'current_rank' 'current_score' and next clue
+  	// Find Required Code
+  	// Test required vs input code
+  	// If wrong return invalid
+  	// Else return 'correct' 'current_rank' 'current_score' and next clue
 
 
-	//IN PROGRESS TODO: Revise queries into one or two queries
-	// 		Implement rank checking
-	//		Increment Score on correct visit
-	//		Check if incorrect waypoint is in another hunt or in the wrong order
-	$query = "SELECT curr FROM MemberOf WHERE player = $user LIMIT 1";
-	 $team = pg_query($conn, $query);
+  	//IN PROGRESS TODO: Revise queries into one or two queries
+  	// 		Implement rank checking
+  	//		Increment Score on correct visit
+  	//		Check if incorrect waypoint is in another hunt or in the wrong order
 
-	 $query = "SELECT hunt FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 $hunt = pg_query($conn, $query);
+    $query_one = $STH->prepare("SELECT hunt, currentWP, rank, score
+      FROM TreasureHunt.Participates WHERE team = ? AND currentWP IS NOT NULL");
+    //Test if rank increases in later query, placeholder
+    //Score increase
+    $query_one->bindParam(1, $team, PDO::PARAM_STR);
 
-	 $query = "SELECT currentWP FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 $currentWP_num = pg_query($conn, $query);
+    $query_two = $STH->prepare("SELECT curr FROM MemberOf WHERE player = ? LIMIT 1");
+    $query_two->bindParam(1, $user, PDO::PARAM_STR);
 
-	 $query = "SELECT rank FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 $rank = pg_query($conn, $query); //Test if rank increases in later query, placeholder
+    $query_three = $STH->prepare("SELECT verification_code FROM Waypoint WHERE hunt = ? AND num = ?");
+    $query_three->bindParam(1, $hunt, PDO::PARAM_STR);
+    $query_three->bindParam(2, $currentWP_num, PDO::PARAM_STR);
 
-	 $query = "SELECT score FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 $score = pg_query($conn, $query); //Score increase
+    $query_four = $STH->prepare("SELECT numWayPoints FROM Hunt WHERE id = ?");
+    $query_four->bindParam(1, $hunt, PDO::PARAM_STR);
 
-	 $query = "SELECT verification_code FROM Waypoint WHERE hunt = $hunt AND num = $currentWP_num";
-	 $ver_code = pg_query($conn, $query);
+    $query_one->execute();
+    $query_one->setFetchMode(PDO::FETCH_ASSOC);
+    $query_two->execute();
+    $query_two->setFetchMode(PDO::FETCH_ASSOC);
+    $query_three->execute();
+    $query_three->setFetchMode(PDO::FETCH_ASSOC);
+    $query_four->execute();
+    $query_four->setFetchMode(PDO::FETCH_ASSOC);
 
-	$query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
-	$num_waypoints =  pg_query($conn, $query);
+	 // $query = "SELECT hunt FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 // $hunt = pg_query($conn, $query);
 
-    if ($code != $ver_code) {
+	 // $query = "SELECT currentWP FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 // $currentWP_num = pg_query($conn, $query);
+
+	 // $query = "SELECT rank FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 // $rank = pg_query($conn, $query); //Test if rank increases in later query, placeholder
+
+	 // $query = "SELECT score FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
+	 // $score = pg_query($conn, $query); //Score increase
+
+	 // $query = "SELECT verification_code FROM Waypoint WHERE hunt = $hunt AND num = $currentWP_num";
+	 // $ver_code = pg_query($conn, $query);
+
+	 // $query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
+	 // $num_waypoints =  pg_query($conn, $query);
+
+    if ($code != $query_three) {
         // Wrong code - could also check whether the code is for another waypoint)
         return array (
             'status'=>'invalid'
