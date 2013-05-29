@@ -18,7 +18,7 @@ try {
     echo '<tr><td><b>Distance</b></td> <td>',$hunt['distance'],'</td></tr>';
     echo '<tr><td><b>Teams</b></td> <td>',$hunt['nteams'],'</td></tr>';
     echo '<tr><td><b>Waypoints</b></td> <td>',$hunt['n_wp'],'</td></tr>';
-    echo '</table>'
+    echo '</table>';
 } catch (Exception $e) {
     echo 'Cannot get hunt details';
 }
