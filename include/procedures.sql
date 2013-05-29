@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION treasurehunt.dashboardName(varchar)
+CREATE OR REPLACE FUNCTION treasureHunt.dashboardName(varchar)
 RETURNS TABLE(name varchar, addr varchar, curr varchar) AS $body$
 DECLARE
   playerName ALIAS FOR $1;
@@ -10,7 +10,7 @@ BEGIN
 END;
 $body$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION treasurehunt.huntCount(varchar)
+CREATE OR REPLACE FUNCTION treasureHunt.huntCount(varchar)
 RETURNS TABLE(stat varchar) AS $body$
 DECLARE
   playerName ALIAS FOR $1;
@@ -21,7 +21,7 @@ BEGIN
 END;
 $body$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION treasurehunt.getBadges(varchar)
+CREATE OR REPLACE FUNCTION treasureHunt.getBadges(varchar)
 RETURNS TABLE(name varchar, descrip text) AS $body$
 DECLARE
   playerName ALIAS FOR $1;
@@ -33,7 +33,7 @@ BEGIN
 END;
 $body$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION treasurehunt.getHuntStatus(varchar)
+CREATE OR REPLACE FUNCTION treasureHunt.getHuntStatus(varchar)
 RETURNS TABLE(status varchar, name varchar, team varchar, 
               start_time timestamp without time zone, elapsed text, 
               score integer, waypoint_count smallint, clue text) AS $body$
@@ -53,3 +53,15 @@ BEGIN
     WHERE M.player=playerName AND M.current='true' AND P.currentWP=W.num;
 END;
 $body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION treasureHunt.getUserStatistics(varchar)
+RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
+DECLARE
+  playerName ALIAS FOR $1;
+BEGIN
+  RETURN QUERY SELECT PS.stat_name, PS.stat_value
+  FROM treasurehunt.playerStats PS
+  WHERE PS.player = playerName
+  ORDER BY stat_name ASC;
+END;
+$BODY$ LANGUAGE plpgsql;

@@ -14,7 +14,7 @@ try {
     foreach($details as $stat) {
         $plode = explode("_", $stat['stat_name']);
         $plode = implode(" ", $plode);
-        echo '<tr><td><b>',ucwords($plode),'</b></td> <td class="text-right">',$stat['stat_value'],'</td></tr>';
+        echo '<tr><td><b>',ucwords($plode),'</b></td> <td style="text-align:right">',$stat['stat_value'],'</td></tr>';
     }
     echo '</td></tr>';
     echo '</table>';
