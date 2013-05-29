@@ -312,4 +312,11 @@ function validateVisit($user,$code)
         );
 	}
 }
+
+function getUserStatistics($user)
+{
+    $STH = connect();
+
+    $queryStats = $STH->prepare("SELECT * FROM ");
+}
 ?>

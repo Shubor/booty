@@ -61,6 +61,7 @@ function htmlHead() {
               <li><a href="current.php">Current</a></li>
               <li><a href="hunts.php">Browse</a></li>
               <li><a href="validate.php">Validate</a></li>
+              <li><a href="stats.php">Statistics</a></li>
               <li><a href="login.php">Quit</a></li>
             </ul>
           </div><!--/.nav-collapse -->

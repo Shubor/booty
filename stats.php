@@ -12,7 +12,7 @@ htmlHead();
 try {
     $details = getUserDetails($_SESSION['player']);
     echo '<table class="table">';
-    echo '<tr><td><b>Name</b></td> <td>','<a href="stats.php">'.$details['name'].'</a>','</td></tr>';
+    echo '<tr><td><b>Name</b></td> <td>',$details['name'],'</td></tr>';
     echo '<tr><td><b>Address</b></td> <td>',$details['address'],'</td></tr>';
     echo '<tr><td><b>Current Team</b></td> <td>',$details['team'],'</td></tr>';
     echo '<tr><td><b>Hunts Played</b></td> <td>',$details['nhunts'],'</td></tr>';
