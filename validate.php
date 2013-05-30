@@ -18,10 +18,13 @@ if (!isset($_REQUEST['vcode'])) {
 } else {
     try {
         $visit = validateVisit($_SESSION['player'],$_REQUEST['vcode']);
-        if($visit['status'] == 'complete') {
+        if($visit['status'] == 'complete')
+        {
             echo '<h2>Congratulations!</h2> You\'ve validated a visit to your last waypoint!';
             echo '<p>Your team has finished with a final score of ',$visit['score'],'</p>';
-        } else if($visit['status'] == 'correct') {
+        }
+        else if($visit['status'] == 'correct')
+        {
             echo '<h2>Congratulations!</h2> You\'ve validated a visit to your next waypoint!';
             echo '<p>Your team\'s score is now ',$visit['score'],'</p>';
             echo '<h2>Next Waypoint\'s clue</h2> <quote>',$visit['clue'],'</quote>';
@@ -29,7 +32,9 @@ if (!isset($_REQUEST['vcode'])) {
                 <input type=text name="vcode" class="input" placeholder="Verification Code">
                 <button type="submit" class="btn">Verify</button>
             </form>';
-        } else {
+        }
+        else
+        {
             echo '<h2>Wrong verification code!</h2> (Out of order, or not in this hunt)';
         }
     } catch (Exception $e) {

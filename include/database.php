@@ -138,6 +138,12 @@ function getAvailableHunts()
     $results = $query->fetchAll();
 
     return $results;
+
+    // TODO:
+    // If team has completed BUT overall hunt isn't complete
+    // ==> "hunt results not yet available"
+    // If team has completed AND hunt is complete
+    // ==> Display team rank etc.
 }
 
 /**
@@ -247,7 +253,7 @@ function validateVisit($user,$code)
     $num_waypts = $result['numwaypoints'];
     $start_time = $result['starttime'];
 
-    $results = array();
+    $results = array(); // All things under $results relate to the team, not overall hunt
 
     // Fetch required verification code and then compare it with given verification code
     $ver_code = $STH->prepare("SELECT * FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
@@ -261,7 +267,7 @@ function validateVisit($user,$code)
     {
         $results['score'] = $score + 1;
 
-        // Last waypoint
+        // ** Last waypoint
         //   update team's hunt status, (currentwp = null, duration, score, rank)
         if ($currentwp == $num_waypts)
         {
@@ -282,7 +288,7 @@ function validateVisit($user,$code)
             // Can do this here, or after updating the visit log
 
         }
-        // Not last way point -- give next clue
+        // ** Not last way point -- give next clue
         else
         {
             $results['status'] = 'correct';
@@ -311,7 +317,7 @@ function validateVisit($user,$code)
     {
         $results['status'] = 'incorrect';
 
-        // code given is incorrect
+        // ** code given is incorrect
         // still attempt to store a visit attempt, but marked as incorrect, give appropriate feedback
     }
 
