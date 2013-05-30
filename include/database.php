@@ -301,7 +301,7 @@ function validateVisit($user,$code)
             $update_query->bindParam(4, $team, PDO::PARAM_STR);
             $update_query->execute();
 
-            $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt_id");
+            $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = ?");
             $next_clue->bindParam(1, $hunt_id, PDO::PARAM_INT);
             $next_clue->execute();
             $next_clue->setFetchMode(PDO::FETCH_ASSOC);
@@ -324,7 +324,8 @@ function validateVisit($user,$code)
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES (?, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 't', ?, ?)");
+        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
+                    FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 't', ?, ?)");
         $log_visit->bindParam(1, $team, PDO::PARAM_STR);
         $log_visit->bindParam(2, $team, PDO::PARAM_STR);
         $log_visit->bindParam(3, $code, PDO::PARAM_INT);
@@ -336,7 +337,8 @@ function validateVisit($user,$code)
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES (?, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
+        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
+                    FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
         $log_visit->bindParam(1, $team, PDO::PARAM_STR);
         $log_visit->bindParam(2, $team, PDO::PARAM_STR);
         $log_visit->bindParam(3, $code, PDO::PARAM_INT);
