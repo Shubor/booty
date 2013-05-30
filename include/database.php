@@ -262,8 +262,8 @@ function validateVisit($user,$code)
 
     // Fetch required verification code and then compare it with given verification code
     $ver_code = $STH->prepare("SELECT * FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
-    $ver_code->bindParam(1, $hunt_id, PDO::PARAM_STR);
-    $ver_code->bindParam(2, $currentwp, PDO::PARAM_STR);
+    $ver_code->bindParam(1, $hunt_id, PDO::PARAM_INT);
+    $ver_code->bindParam(2, $currentwp, PDO::PARAM_INT);
     $ver_code->execute();
     $ver_code->setFetchMode(PDO::FETCH_ASSOC);
     $ver_code_result = $ver_code->fetch();
@@ -278,9 +278,12 @@ function validateVisit($user,$code)
 
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
               RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
-              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = (extract (epoch from NOW() - starttime)/60)::integer
-              WHERE P.hunt = $hunt_id AND P.team = $team"); // TODO: Set rank
+              SET P.currentwp = NULL, P.score = (? + 1), P.duration = (extract (epoch from NOW() - starttime)/60)::integer
+              WHERE P.hunt = ? AND P.team = ?"); // TODO: Set rank
               // duration set in minutes
+            $update_query->bindParam(1, $score, PDO::PARAM_INT);
+            $update_query->bindParam(2, $hunt_id, PDO::PARAM_INT);
+            $update_query->bindParam(3, $team, PDO::PARAM_STR);
             $update_query->execute();
         }
 
@@ -290,11 +293,16 @@ function validateVisit($user,$code)
             $results['status'] = 'correct';
 
             $update_query = $STH->execute("UPDATE TreasureHunt.Participates
-              SET currentwp = ($currentwp + 1), score = ($score + 1)
-              WHERE hunt = $hunt_id, team = $team");
+              SET currentwp = (? + 1), score = (? + 1)
+              WHERE hunt = ? AND team = ?");
+            $update_query->bindParam(1, $currentwp, PDO::PARAM_INT);
+            $update_query->bindParam(2, $score, PDO::PARAM_INT);
+            $update_query->bindParam(3, $hunt_id, PDO::PARAM_INT);
+            $update_query->bindParam(4, $team, PDO::PARAM_STR);
             $update_query->execute();
 
             $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt_id");
+            $next_clue->bindParam(1, $hunt_id, PDO::PARAM_INT);
             $next_clue->execute();
             $next_clue->setFetchMode(PDO::FETCH_ASSOC);
             $clue = $next_clue->fetch();
@@ -316,14 +324,22 @@ function validateVisit($user,$code)
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = $team)+1, $code, date_trunc('seconds', current_timestamp)::timestamp, 't', $hunt_id, $currentwp)");
+        VALUES (?, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 't', ?, ?)");
+        $log_visit->bindParam(1, $team, PDO::PARAM_STR);
+        $log_visit->bindParam(2, $team, PDO::PARAM_STR);
+        $log_visit->bindParam(3, $code, PDO::PARAM_INT);
+        $log_visit->bindParam(4, $hunt_id, PDO::PARAM_INT);
+        $log_visit->bindParam(5, $currentwp, PDO::PARAM_INT);
         $log_visit->execute();
     }
     else
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = $team)+1, $code, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
+        VALUES (?, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
+        $log_visit->bindParam(1, $team, PDO::PARAM_STR);
+        $log_visit->bindParam(2, $team, PDO::PARAM_STR);
+        $log_visit->bindParam(3, $code, PDO::PARAM_INT);
         $log_visit->execute();
     }
 
