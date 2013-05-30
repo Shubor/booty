@@ -279,8 +279,9 @@ function validateVisit($user,$code)
 
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
               RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
-              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = $curr_timestamp - H.starttime
+              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = (extract (epoch from now() - starttime)/60)::integer
               WHERE P.hunt = $hunt_id, P.team = $team"); // TODO: Set rank
+              // duration set in minutes
             $update_query->execute();
 
         // Not last way point -- give next clue
