@@ -257,7 +257,6 @@ function validateVisit($user,$code)
     $team = $result['team'];
     $score = $result['score'];
     $num_waypts = $result['numwaypoints'];
-    $curr_timestamp = NOW();
 
     $results = array();
 
@@ -279,8 +278,8 @@ function validateVisit($user,$code)
 
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
               RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
-              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = (extract (epoch from now() - starttime)/60)::integer
-              WHERE P.hunt = $hunt_id, P.team = $team"); // TODO: Set rank
+              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = (extract (epoch from NOW() - starttime)/60)::integer
+              WHERE P.hunt = $hunt_id AND P.team = $team"); // TODO: Set rank
               // duration set in minutes
             $update_query->execute();
         }
@@ -290,7 +289,7 @@ function validateVisit($user,$code)
         {
             $results['status'] = 'correct';
 
-            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
+            $update_query = $STH->execute("UPDATE TreasureHunt.Participates
               SET currentwp = ($currentwp + 1), score = ($score + 1)
               WHERE hunt = $hunt_id, team = $team");
             $update_query->execute();
@@ -312,20 +311,21 @@ function validateVisit($user,$code)
         // still attempt to store a visit attempt, but marked as incorrect, give appropriate feedback
     }
 
+    // In both cases (fail and completed waypoint) visit should be saved with current timestamp
     if ($code == $ver_code['verification_code'])
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit)+1, $code, t, $hunt_id, $currentwp)");
+        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = $team)+1, $code, date_trunc('seconds', current_timestamp)::timestamp, 't', $hunt_id, $currentwp)");
+        $log_visit->execute();
     }
     else
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit)+1, $code, NOW(), f, NULL, NULL)");
+        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit WHERE team = $team)+1, $code, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
+        $log_visit->execute();
     }
-
-    // In both cases (fail and completed waypoint) visit should be saved with current timestamp
 
     // See if the entire hunt is finished
     // $update_hunt_status = $STH=>prepare("UPDATE TreasureHunt.Hunt /**/")
