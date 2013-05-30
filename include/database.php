@@ -291,9 +291,9 @@ function validateVisit($user,$code)
             $update_query->bindParam(4, $team, PDO::PARAM_STR);
             $update_query->execute();
 
-            $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = ? AND NUM = ?");
+            $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = ? AND NUM = ?+1");
             $next_clue->bindParam(1, $hunt_id, PDO::PARAM_INT);
-            $next_clue->bindParam(2, $currentwp + 1, PDO::PARAM_INT);
+            $next_clue->bindParam(2, $currentwp, PDO::PARAM_INT);
             $next_clue->execute();
             $next_clue->setFetchMode(PDO::FETCH_ASSOC);
             $clue = $next_clue->fetch();
