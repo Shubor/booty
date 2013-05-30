@@ -63,6 +63,7 @@ function htmlHead() {
               <li><a href="validate.php">Validate</a></li>
               <li><a href="stats.php">Statistics</a></li>
               <li><a href="login.php">Quit</a></li>
+              <li><a href="reset.php">Reset</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

@@ -324,4 +324,27 @@ function getUserStatistics($user)
     $results = $queryStats->fetchAll();
     return $results;
 }
+
+function resetDatabase()
+{
+
+  $schema = file_get_contents('./TreasureHuntSchema.sql');
+  $procedures = file_get_contents('./TreasureHuntProcedures.sql');
+  $data = file_get_contents('./TreasureHuntExampleData.sql');
+
+  $STH = connect();
+
+  $STH->beginTransaction();
+
+  $STH->exec("$schema");
+  $STH->exec("$procedures");
+  $STH->exec("$data");
+
+  $STH->commit();
+
+  // $query = $STH->prepare("SELECT treasurehunt.resetDatabase();");
+
+  // $query->execute;
+
+}
 ?>
