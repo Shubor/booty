@@ -259,7 +259,8 @@ function validateVisit($user,$code)
     $num_waypts = $result['numwaypoints'];
 
     $results = array();
-
+	
+	
     // Fetch required verification code and then compare it with given verification code
     $ver_code = $STH->prepare("SELECT * FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
     $ver_code->bindParam(1, $hunt_id, PDO::PARAM_INT);
@@ -277,7 +278,7 @@ function validateVisit($user,$code)
         //   update team's hunt status, (currentwp = null, duration, score, rank)
         if ($currentwp == $num_waypts)
         {
-            $results['status'] = 'complete';
+            
 
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
               RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
@@ -288,6 +289,15 @@ function validateVisit($user,$code)
             $update_query->bindParam(2, $hunt_id, PDO::PARAM_INT);
             $update_query->bindParam(3, $team, PDO::PARAM_STR);
             $update_query->execute();
+			
+			$test_query = $STH->prepare("SELECT count(P.team) AS num FROM participates P 
+			WHERE P.hunt = $hunt AND P.currentWP IS NOT NULL");
+			
+			if ($test_query = 0)
+			{
+				$results['status'] = 'complete';
+			}
+			
         }
 
         // Not last way point -- give next clue
