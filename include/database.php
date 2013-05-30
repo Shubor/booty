@@ -257,7 +257,7 @@ function validateVisit($user,$code)
     $team = $result['team'];
     $score = $result['score'];
     $num_waypts = $result['numwaypoints'];
-    // get current timestamp
+    $curr_timestamp = NOW();
 
     $results = array();
 
@@ -271,20 +271,27 @@ function validateVisit($user,$code)
 
     if ($code == $ver_code['verification_code'])
     {
-        // code given is correct
-        // Update current waypoint and score
-
         // Last waypoint
-        //   update team's hunt status, (currentwp = null, duration, score, rank) and show congrats message to player lol
+        //   update team's hunt status, (currentwp = null, duration, score, rank)
         if ($currentwp == $num_waypts)
         {
-
             $results['status'] = 'complete';
+
+            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
+              RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
+              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = $curr_timestamp - H.starttime
+              WHERE P.hunt = $hunt_id, P.team = $team"); // TODO: Set rank
+            $update_query->execute();
 
         // Not last way point -- give next clue
         else
         {
             $results['status'] = 'correct';
+
+            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
+              SET currentwp = ($currentwp + 1), score = ($score + 1)
+              WHERE hunt = $hunt_id, team = $team");
+            $update_query->execute();
 
             $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt_id");
             $next_clue->execute();
@@ -304,6 +311,9 @@ function validateVisit($user,$code)
     }
 
     // In both cases (fail and completed waypoint) visit should be saved with current timestamp
+
+    // See if the entire hunt is finished
+    // $update_hunt_status = $STH=>prepare("UPDATE TreasureHunt.Hunt /**/")
 
     return $results;
 
