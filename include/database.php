@@ -230,17 +230,6 @@ function validateVisit($user,$code)
 
     // STUDENT TODO:
     // Replace lines below with code to obtain status from the database
-    // (You could extend this to
-
-  	// Find Required Code
-  	// Test required vs input code
-  	// If wrong return invalid
-  	// Else return 'correct' 'current_rank' 'current_score' and next clue
-
-  	//IN PROGRESS TODO: Revise queries into one or two queries
-  	// 		Implement rank checking
-  	//		Increment Score on correct visit
-  	//		Check if incorrect waypoint is in another hunt or in the wrong order
 
     $query = $STH->prepare("SELECT * FROM TreasureHunt.Participates P
       RIGHT OUTER JOIN TreasureHunt.MemberOf M USING (team)
@@ -258,7 +247,6 @@ function validateVisit($user,$code)
     $num_waypts = $result['numwaypoints'];
 
     $results = array();
-
 
     // Fetch required verification code and then compare it with given verification code
     $ver_code = $STH->prepare("SELECT * FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
@@ -349,48 +337,21 @@ function validateVisit($user,$code)
     }
 
     /* Check for completion of the entire hunt */
-    $hunt_completion = $STH->prepare("SELECT count(team) AS num FROM TreasureHunt.participates
-      WHERE hunt = ? AND currentWP IS NOT NULL");
+    $hunt_completion = $STH->prepare("SELECT count(team) AS num
+      FROM TreasureHunt.participates WHERE hunt = ? AND currentWP IS NOT NULL");
     $hunt_completion->bindParam(1, $hunt, PDO::PARAM_INT);
     $hunt_completion->execute();
 
-    if ($test_query == 0) // Entire hunt is complete
+    if ($hunt_completion == 0) // Entire hunt is complete
     {
         $update_hunt_completion = $STH->prepare("UPDATE TreasureHunt.Hunt SET status = 'finished' WHERE hunt = ?");
         $update_hunt_completion->bindParam(1, $hunt_id, PDO::PARAM_INT);
         $update_hunt_completion->execute();
+
+        // TODO: Work out ranks for all the different teams
     }
 
     return $results;
-
-/* ----------------------------------------------------------------------------------------------------- */
-
-
-
-  //   if ($code != $query_three) {
-  //       // Wrong code - could also check whether the code is for another waypoint)
-  //       return array (
-  //           'status'=>'invalid'
-  //       );
-  //   } else { //test if last waypoint, test rank
-
-		// if ($currentWP_num = $num_waypoints) { // Tests if last waypoint, no clue returned
-		// 	return array(
-  //           'status'=>'correct',
-  //           'rank'=>$rank,
-  //           'score'=>$score,
-  //       );
-
-		// }
-		// $query = "SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
-		// $clue = pg_query($conn, $query);
-		// return array(
-  //           'status'=>'correct',
-  //           'rank'=>$rank,
-  //           'score'=>$score,
-  //           'clue'=>$clue
-  //       );
-  // }
 }
 
 function getUserStatistics($user)
