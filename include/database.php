@@ -341,8 +341,9 @@ function validateVisit($user,$code)
       FROM TreasureHunt.participates WHERE hunt = ? AND currentWP IS NOT NULL");
     $hunt_completion->bindParam(1, $hunt, PDO::PARAM_INT);
     $hunt_completion->execute();
+    $count = $hunt_completion->rowCount();
 
-    if ($hunt_completion == 0) // Entire hunt is complete
+    if ($count == 0) // Entire hunt is complete
     {
         $update_hunt_completion = $STH->prepare("UPDATE TreasureHunt.Hunt SET status = 'finished' WHERE hunt = ?");
         $update_hunt_completion->bindParam(1, $hunt_id, PDO::PARAM_INT);
