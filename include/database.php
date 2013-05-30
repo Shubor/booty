@@ -268,7 +268,7 @@ function validateVisit($user,$code)
     $ver_code->setFetchMode(PDO::FETCH_ASSOC);
     $ver_code_result = $ver_code->fetch();
 
-    if ($code == $ver_code['verification_code'])
+    if ($code == $ver_code_result['verification_code'])
     {
         // Last waypoint
         //   update team's hunt status, (currentwp = null, duration, score, rank)
@@ -292,7 +292,7 @@ function validateVisit($user,$code)
         {
             $results['status'] = 'correct';
 
-            $update_query = $STH->execute("UPDATE TreasureHunt.Participates
+            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
               SET currentwp = (? + 1), score = (? + 1)
               WHERE hunt = ? AND team = ?");
             $update_query->bindParam(1, $currentwp, PDO::PARAM_INT);
@@ -320,7 +320,7 @@ function validateVisit($user,$code)
     }
 
     // In both cases (fail and completed waypoint) visit should be saved with current timestamp
-    if ($code == $ver_code['verification_code'])
+    if ($code == $ver_code_result['verification_code'])
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
