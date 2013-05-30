@@ -65,7 +65,7 @@ function checkLogin($name,$pass)
         // $salt->fetch();
         // $hash_password = crypt($pass);
 
-        $query = $STH->prepare("SELECT * FROM TreasureHunt.checkLogin(?,?);");
+        $query = $STH->prepare("SELECT * FROM checkLogin(?,?);");
         $query->bindValue(1, $name, PDO::PARAM_INT);
         $query->bindValue(2, $pass, PDO::PARAM_STR);
         $query->execute();
@@ -133,7 +133,7 @@ function getAvailableHunts()
     handled by the connect function*/
     $STH = connect();
 
-    $query = $STH->prepare("SELECT * FROM treasurehunt.getAvailableHunts();");
+    $query = $STH->prepare("SELECT * FROM treasurehunt.getAvailableHunts();");    
     $query->execute();
     $results = $query->fetchAll();
 
@@ -155,8 +155,8 @@ function getHuntDetails($hunt)
 
     // $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
 
-    $query_one = $STH->prepare("SELECT * FROM TreasureHunt.getHuntDetails(?);");
-    $query_two = $STH->prepare("SELECT * FROM TreasureHunt.getParticipateCount(?);");
+    $query_one = $STH->prepare("SELECT * FROM getHuntDetails(?);");
+    $query_two = $STH->prepare("SELECT * FROM getParticipateCount(?);");
 
     $query_one->bindParam(1, $hunt, PDO::PARAM_STR);
     $query_two->bindParam(1, $hunt, PDO::PARAM_STR);
@@ -249,24 +249,23 @@ function validateVisit($user,$code)
     //Score increase
     $query_one->bindParam(1, $team, PDO::PARAM_STR);
 
-    $query_two = $STH->prepare("SELECT curr FROM TreasureHunt.MemberOf WHERE player = ? LIMIT 1");
+    $query_two = $STH->prepare("SELECT curr FROM MemberOf WHERE player = ? LIMIT 1");
     $query_two->bindParam(1, $user, PDO::PARAM_STR);
 
-    $query_three = $STH->prepare("SELECT verification_code FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
+    $query_three = $STH->prepare("SELECT verification_code FROM Waypoint WHERE hunt = ? AND num = ?");
     $query_three->bindParam(1, $hunt, PDO::PARAM_STR);
     $query_three->bindParam(2, $currentWP_num, PDO::PARAM_STR);
 
-    $query_four = $STH->prepare("SELECT numWayPoints FROM TreasureHunt.Hunt WHERE id = ?");
+    $query_four = $STH->prepare("SELECT numWayPoints FROM Hunt WHERE id = ?");
     $query_four->bindParam(1, $hunt, PDO::PARAM_STR);
 
     $query_one->execute();
-    $query_two->execute();
-    $query_three->execute();
-    $query_four->execute();
-
     $query_one->setFetchMode(PDO::FETCH_ASSOC);
+    $query_two->execute();
     $query_two->setFetchMode(PDO::FETCH_ASSOC);
+    $query_three->execute();
     $query_three->setFetchMode(PDO::FETCH_ASSOC);
+    $query_four->execute();
     $query_four->setFetchMode(PDO::FETCH_ASSOC);
 
 	 // $query = "SELECT hunt FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
@@ -302,7 +301,7 @@ function validateVisit($user,$code)
         );
 
 		}
-		$query = "SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
+		$query = "SELECT clue FROM Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
 		$clue = pg_query($conn, $query);
 		return array(
             'status'=>'correct',
@@ -317,7 +316,7 @@ function getUserStatistics($user)
 {
     $STH = connect();
 
-    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserStatistics(?);");
+    $queryStats = $STH->prepare("SELECT * FROM getUserStatistics(?);");
     $queryStats->bindParam(1, $user, PDO::PARAM_STR);
     $queryStats->execute();
     $queryStats->setFetchMode(PDO::FETCH_ASSOC);
