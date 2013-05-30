@@ -46,7 +46,7 @@ CREATE TABLE TreasureHunt.Location (
     parent VARCHAR(40) NULL,
     type   VARCHAR(10) NOT NULL,
     CONSTRAINT Location_PK        PRIMARY KEY (name),
-    CONSTRAINT Location_Parent_FK FOREIGN KEY (parent) REFERENCES TreasureHunt.Location ON DELETE SET NULL ON UPDATE CASCADE, 
+    CONSTRAINT Location_Parent_FK FOREIGN KEY (parent) REFERENCES TreasureHunt.Location ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT Location_CHK CHECK (type IN ('suburb','area','region','city','state','country'))
 );
 --
@@ -113,7 +113,7 @@ CREATE TABLE TreasureHunt.PlayerStats (
 CREATE TABLE TreasureHunt.Team (
     name    VARCHAR(40),
     created DATE NOT NULL DEFAULT CURRENT_DATE,
-  till DATE, 
+  till DATE,
   active BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT Team_PK PRIMARY KEY (name)
 );
@@ -248,7 +248,7 @@ CREATE TRIGGER TeamMin2Members_Trigger
 INSERT INTO treasurehunt.player VALUES ('Greg', 'abc123', 'abc123', 'm', 'Sydney');
 INSERT INTO treasurehunt.player VALUES ('Charlotte', 'swordfish', 'swordfish', 'f', 'New York');
 INSERT INTO treasurehunt.player VALUES ('Table', 'chair', 'chair', 'o', 'Alice Springs');
-       
+
 
 /* IMPORTANT TODO: */
 /* please replace 'your_login' with the name of your PostgreSQL login */
