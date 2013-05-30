@@ -34,7 +34,6 @@ try {
         echo '<tr><td><b>Final Score</b></td> <td style="text-align:right">',$hunt['score'],'</td></tr>';
         echo '</table>';
     } else {
-        print_r($hunt);
         echo 'No hunt history.';
     }
 } catch (Exception $e) {
