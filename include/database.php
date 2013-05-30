@@ -243,74 +243,109 @@ function validateVisit($user,$code)
   	//		Increment Score on correct visit
   	//		Check if incorrect waypoint is in another hunt or in the wrong order
 
-    $query_one = $STH->prepare("SELECT hunt, currentWP, rank, score
-      FROM TreasureHunt.Participates WHERE team = ? AND currentWP IS NOT NULL");
-    //Test if rank increases in later query, placeholder
-    //Score increase
-    $query_one->bindParam(1, $team, PDO::PARAM_STR);
+    $query = $STH->prepare("SELECT * FROM TreasureHunt.Participates P
+      RIGHT OUTER JOIN TreasureHunt.MemberOf M USING (team)
+      RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
+      WHERE P.currentwp IS NOT NULL AND player = ? and current = true");
+    $query->bindParam(1, $user, PDO::PARAM_STR);
+    $query->execute();
+    $query->setFetchMode(PDO::FETCH_ASSOC);
+    $result = $query->fetch();
 
-    $query_two = $STH->prepare("SELECT curr FROM TreasureHunt.MemberOf WHERE player = ? LIMIT 1");
-    $query_two->bindParam(1, $user, PDO::PARAM_STR);
+    $hunt_id = $result['hunt']; // hunt id
+    $currentwp = $result['currentwp'];
+    $team = $result['team'];
+    $score = $result['score'];
+    $num_waypts = $result['numwaypoints'];
+    $curr_timestamp = NOW();
 
-    $query_three = $STH->prepare("SELECT verification_code FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
-    $query_three->bindParam(1, $hunt, PDO::PARAM_STR);
-    $query_three->bindParam(2, $currentWP_num, PDO::PARAM_STR);
+    $results = array();
 
-    $query_four = $STH->prepare("SELECT numWayPoints FROM TreasureHunt.Hunt WHERE id = ?");
-    $query_four->bindParam(1, $hunt, PDO::PARAM_STR);
+    // Fetch required verification code and then compare it with given verification code
+    $ver_code = $STH->prepare("SELECT * FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
+    $ver_code->bindParam(1, $hunt_id, PDO::PARAM_STR);
+    $ver_code->bindParam(2, $currentwp, PDO::PARAM_STR);
+    $ver_code->execute();
+    $ver_code->setFetchMode(PDO::FETCH_ASSOC);
+    $ver_code_result = $ver_code->fetch();
 
-    $query_one->execute();
-    $query_two->execute();
-    $query_three->execute();
-    $query_four->execute();
+    if ($code == $ver_code['verification_code'])
+    {
+        // Last waypoint
+        //   update team's hunt status, (currentwp = null, duration, score, rank)
+        if ($currentwp == $num_waypts)
+        {
+            $results['status'] = 'complete';
 
-    $query_one->setFetchMode(PDO::FETCH_ASSOC);
-    $query_two->setFetchMode(PDO::FETCH_ASSOC);
-    $query_three->setFetchMode(PDO::FETCH_ASSOC);
-    $query_four->setFetchMode(PDO::FETCH_ASSOC);
+            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
+              RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
+              SET P.currentwp = NULL, P.score = ($score + 1), P.duration = (extract (epoch from now() - starttime)/60)::integer
+              WHERE P.hunt = $hunt_id, P.team = $team"); // TODO: Set rank
+              // duration set in minutes
+            $update_query->execute();
 
-	 // $query = "SELECT hunt FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 // $hunt = pg_query($conn, $query);
+        // Not last way point -- give next clue
+        else
+        {
+            $results['status'] = 'correct';
 
-	 // $query = "SELECT currentWP FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 // $currentWP_num = pg_query($conn, $query);
+            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
+              SET currentwp = ($currentwp + 1), score = ($score + 1)
+              WHERE hunt = $hunt_id, team = $team");
+            $update_query->execute();
 
-	 // $query = "SELECT rank FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 // $rank = pg_query($conn, $query); //Test if rank increases in later query, placeholder
+            $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt_id");
+            $next_clue->execute();
+            $next_clue->setFetchMode(PDO::FETCH_ASSOC);
+            $clue = $next_clue->fetch();
 
-	 // $query = "SELECT score FROM Participates WHERE team = $team AND currentWP IS NOT NULL";
-	 // $score = pg_query($conn, $query); //Score increase
+            $results['clue'] = $clue;
+        }
+    }
 
-	 // $query = "SELECT verification_code FROM Waypoint WHERE hunt = $hunt AND num = $currentWP_num";
-	 // $ver_code = pg_query($conn, $query);
+    else
+    {
+        $results['status'] = 'incorrect';
 
-	 // $query = "SELECT numWayPoints FROM Hunt WHERE id = $hunt";
-	 // $num_waypoints =  pg_query($conn, $query);
+        // code given is incorrect
+        // still attempt to store a visit attempt, but marked as incorrect, give appropriate feedback
+    }
 
-    if ($code != $query_three) {
-        // Wrong code - could also check whether the code is for another waypoint)
-        return array (
-            'status'=>'invalid'
-        );
-    } else { //test if last waypoint, test rank
+    // In both cases (fail and completed waypoint) visit should be saved with current timestamp
 
-		if ($currentWP_num = $num_waypoints) { // Tests if last waypoint, no clue returned
-			return array(
-            'status'=>'correct',
-            'rank'=>$rank,
-            'score'=>$score,
-        );
+    // See if the entire hunt is finished
+    // $update_hunt_status = $STH=>prepare("UPDATE TreasureHunt.Hunt /**/")
 
-		}
-		$query = "SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
-		$clue = pg_query($conn, $query);
-		return array(
-            'status'=>'correct',
-            'rank'=>$rank,
-            'score'=>$score,
-            'clue'=>$clue
-        );
-	}
+    return $results;
+
+/* ----------------------------------------------------------------------------------------------------- */
+
+
+
+  //   if ($code != $query_three) {
+  //       // Wrong code - could also check whether the code is for another waypoint)
+  //       return array (
+  //           'status'=>'invalid'
+  //       );
+  //   } else { //test if last waypoint, test rank
+
+		// if ($currentWP_num = $num_waypoints) { // Tests if last waypoint, no clue returned
+		// 	return array(
+  //           'status'=>'correct',
+  //           'rank'=>$rank,
+  //           'score'=>$score,
+  //       );
+
+		// }
+		// $query = "SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = $hunt AND num = ($currentWP_num + 1)"; //Gets next clue
+		// $clue = pg_query($conn, $query);
+		// return array(
+  //           'status'=>'correct',
+  //           'rank'=>$rank,
+  //           'score'=>$score,
+  //           'clue'=>$clue
+  //       );
+  // }
 }
 
 function getUserStatistics($user)
