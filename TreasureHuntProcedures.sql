@@ -10,7 +10,7 @@ BEGIN TRANSACTION;
   DROP FUNCTION IF EXISTS TreasureHunt.checkLogin(varchar, varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.updateScore(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.updateFinishedHunts(varchar);
-  DROP FUNCTION IF EXISTS TreasureHunt.updateRank(integer, varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.updateRank(integer, varchar, varchar);
 COMMIT;
 
 CREATE OR REPLACE FUNCTION treasureHunt.dashboardName(varchar)
@@ -173,24 +173,23 @@ BEGIN
 END;
 $body$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION updateRank(integer, varchar) 
+CREATE OR REPLACE FUNCTION updateRank(integer, varchar, varchar) 
 RETURNS integer AS
 $body$
 DECLARE
   huntId ALIAS FOR $1;
   playerName ALIAS FOR $2;
+  teamName ALIAS FOR $3;
 BEGIN
   UPDATE treasurehunt.participates as P
   SET rank = (SELECT CASE WHEN max(rank) IS NULL
     THEN 1
     ELSE MAX(rank) + 1
     END
-    FROM treasurehunt.memberof MO
-  WHERE hunt = huntId AND MO.team = P.team
-    AND MO.team = (SELECT mem.team
-      FROM treasurehunt.memberof mem
-      WHERE mem.player = playerName 
-      AND current = 'true'));
+    FROM TreasureHunt.participates as PS
+  WHERE PS.hunt = huntId)
+  WHERE P.hunt = huntId AND P.team = teamName;
+
   RETURN P.rank
   FROM treasurehunt.participates P INNER JOIN memberof MO on (P.team = MO.team)
   WHERE MO.player = playerName AND P.hunt = huntId AND MO.current = 'true';

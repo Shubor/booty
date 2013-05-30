@@ -287,8 +287,9 @@ function validateVisit($user,$code)
             // TODO: Update the statistics for all players in the team
             // Can do this here, or after updating the visit log
             $updateFinishedHunts = updateFinishedHunts($user);
-
-            $results['rank'] = updateRank($hunt_id, $user);
+            $temp = updateRank($hunt_id, $user, $team);
+            $results['rank'] = $temp;
+            print_r($results);
 
 
 
@@ -417,13 +418,16 @@ function updateScore($user)
     return $result[0];
 }
 
-function updateRank($hunt_id, $user)
+function updateRank($hunt_id, $user, $team)
 {
     $STH = connect();
-    $updateRank = $STH->prepare("SELECT updateRank(?);");
-    $updateRank->bindParam(1, $hunt_id, PDO::PARAM_STR);
+    $updateRank = $STH->prepare("SELECT updateRank(?, ?, ?);");
+    $updateRank->bindParam(1, $hunt_id, PDO::PARAM_INT);
+    $updateRank->bindParam(2, $user, PDO::PARAM_STR);
+    $updateRank->bindParam(3, $team, PDO::PARAM_STR);
     $updateRank->setFetchMode(PDO::FETCH_NUM);
     $result = $updateRank->fetch();
+    print_r($result);
     return $result[0];
 }
 
