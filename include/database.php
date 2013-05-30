@@ -278,6 +278,9 @@ function validateVisit($user,$code)
             $update_query->bindParam(4, $team, PDO::PARAM_STR);
             $update_query->execute();
 
+            // TODO: Update the statistics for all players in the team
+            // Can do this here, or after updating the visit log
+
         }
         // Not last way point -- give next clue
         else
