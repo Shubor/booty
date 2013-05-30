@@ -237,7 +237,6 @@ function validateVisit($user,$code)
   	// If wrong return invalid
   	// Else return 'correct' 'current_rank' 'current_score' and next clue
 
-
   	//IN PROGRESS TODO: Revise queries into one or two queries
   	// 		Implement rank checking
   	//		Increment Score on correct visit
@@ -270,7 +269,6 @@ function validateVisit($user,$code)
 
     if ($code == $ver_code_result['verification_code'])
     {
-
         $results['score'] = $score + 1;
 
         // Last waypoint
@@ -281,9 +279,9 @@ function validateVisit($user,$code)
 
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
               RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
-              SET P.currentwp = NULL, P.score = (? + 1), P.duration = (extract (epoch from NOW() - starttime)/60)::integer
+              SET P.currentwp = NULL, P.score = (? + 1),
+                P.duration = (extract (epoch from NOW() - starttime)/60)::integer -- duration set in minutes
               WHERE P.hunt = ? AND P.team = ?"); // TODO: Set rank
-              // duration set in minutes
             $update_query->bindParam(1, $score, PDO::PARAM_INT);
             $update_query->bindParam(2, $hunt_id, PDO::PARAM_INT);
             $update_query->bindParam(3, $team, PDO::PARAM_STR);
@@ -328,8 +326,8 @@ function validateVisit($user,$code)
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END
-                    FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 't', ?, ?)");
+        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END FROM TreasureHunt.Visit WHERE team = ?)+1,
+          ?, date_trunc('seconds', current_timestamp)::timestamp, 't', ?, ?)");
         $log_visit->bindParam(1, $team, PDO::PARAM_STR);
         $log_visit->bindParam(2, $team, PDO::PARAM_STR);
         $log_visit->bindParam(3, $code, PDO::PARAM_INT);
@@ -341,8 +339,8 @@ function validateVisit($user,$code)
     {
         $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
         (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END
-                    FROM TreasureHunt.Visit WHERE team = ?)+1, ?, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
+        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END FROM TreasureHunt.Visit WHERE team = ?)+1,
+          ?, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
         $log_visit->bindParam(1, $team, PDO::PARAM_STR);
         $log_visit->bindParam(2, $team, PDO::PARAM_STR);
         $log_visit->bindParam(3, $code, PDO::PARAM_INT);
