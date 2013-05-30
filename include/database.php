@@ -270,6 +270,9 @@ function validateVisit($user,$code)
 
     if ($code == $ver_code_result['verification_code'])
     {
+
+        $results['score'] = $score + 1;
+
         // Last waypoint
         //   update team's hunt status, (currentwp = null, duration, score, rank)
         if ($currentwp == $num_waypts)
