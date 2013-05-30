@@ -265,7 +265,8 @@ function validateVisit($user,$code)
 
     if ($code == $ver_code_result['verification_code'])
     {
-        $results['score'] = $score + 1;
+        //this updates the score for the relevant team
+        $results['score'] = updateScore($user);
 
         // ** Last waypoint
         //   update team's hunt status, (currentwp = null, duration, score, rank)
@@ -273,7 +274,6 @@ function validateVisit($user,$code)
         {
             $results['status'] = 'complete';
 
-            echo $start_time;
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
               SET currentwp = NULL, score = (? + 1),
                 duration = (extract (epoch from NOW() - ?)/60)::integer -- duration set in minutes
@@ -286,6 +286,11 @@ function validateVisit($user,$code)
 
             // TODO: Update the statistics for all players in the team
             // Can do this here, or after updating the visit log
+            $updateFinishedHunts = updateFinishedHunts($user);
+
+            $results['rank'] = updateRank($hunt_id, $user);
+
+
 
         }
         // ** Not last way point -- give next clue
@@ -399,5 +404,37 @@ function resetDatabase()
 
   // $query->execute;
 
+}
+
+function updateScore($user)
+{
+    $STH = connect();
+    $updateScore = $STH->prepare("SELECT * FROM updateScore(?);");
+    $updateScore->bindParam(1, $user, PDO::PARAM_STR);
+    $updateScore->execute();
+    $updateScore->setFetchMode(PDO::FETCH_NUM);
+    $result = $updateScore->fetch();
+    return $result[0];
+}
+
+function updateRank($hunt_id, $user)
+{
+    $STH = connect();
+    $updateRank = $STH->prepare("SELECT updateRank(?);");
+    $updateRank->bindParam(1, $hunt_id, PDO::PARAM_STR);
+    $updateRank->setFetchMode(PDO::FETCH_NUM);
+    $result = $updateRank->fetch();
+    return $result[0];
+}
+
+function updateFinishedHunts($user)
+{
+    $STH = connect();
+    $updateHunts = $STH->prepare("SELECT updateFinishedHunts(?);");
+    $updateHunts->bindParam(1, $user, PDO::PARAM_STR);
+    $updateHunts->execute();
+    $updateHunts->setFetchMode(PDO::FETCH_NUM);
+    $result = $updateHunts->fetch();
+    return $result[0];
 }
 ?>

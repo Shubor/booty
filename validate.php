@@ -21,7 +21,7 @@ if (!isset($_REQUEST['vcode'])) {
         if($visit['status'] == 'complete')
         {
             echo '<h2>Congratulations!</h2> You\'ve validated a visit to your last waypoint!';
-            echo '<p>Your team has finished with a final score of ',$visit['score'],'</p>';
+            echo '<p>Your team has finished with a final score of ',$visit['score'],' and a rank of ',$visit['rank'],'</p>';
         }
         else if($visit['status'] == 'correct')
         {

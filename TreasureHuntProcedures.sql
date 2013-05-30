@@ -8,6 +8,9 @@ BEGIN TRANSACTION;
   DROP FUNCTION IF EXISTS TreasureHunt.getHuntDetails(integer);
   DROP FUNCTION IF EXISTS TreasureHunt.getParticipateCount(integer);
   DROP FUNCTION IF EXISTS TreasureHunt.checkLogin(varchar, varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.updateScore(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.updateFinishedHunts(varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.updateRank(integer, varchar);
 COMMIT;
 
 CREATE OR REPLACE FUNCTION treasureHunt.dashboardName(varchar)
@@ -123,5 +126,73 @@ BEGIN
   RETURN QUERY SELECT playerName
   FROM treasurehunt.Player AS p
   WHERE p.name = playerName AND p.password = passwd LIMIT 1;
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION updateScore(varchar) 
+RETURNS integer AS
+$body$
+DECLARE
+  playerName ALIAS FOR $1;
+BEGIN
+  UPDATE treasurehunt.playerstats as P
+  SET stat_value = P.stat_value::integer + 1 
+  FROM treasurehunt.memberof MO
+  WHERE MO.player = P.player 
+    AND MO.team = (SELECT mem.team
+      FROM treasurehunt.memberof mem
+      WHERE mem.player = playerName 
+      AND current = 'true')
+    AND P.stat_name = 'point_score' AND current = 'true';
+
+    RETURN P.stat_value
+    FROM treasurehunt.playerstats P
+    WHERE player = playerName AND stat_name = 'point_score';
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION updateFinishedHunts(varchar) 
+RETURNS integer AS
+$body$
+DECLARE
+  playerName ALIAS FOR $1;
+BEGIN
+  UPDATE treasurehunt.playerstats as P
+  SET stat_value = P.stat_value::integer + 1 
+  FROM treasurehunt.memberof MO
+  WHERE MO.player = P.player 
+    AND MO.team = (SELECT mem.team
+      FROM treasurehunt.memberof mem
+      WHERE mem.player = playerName 
+      AND current = 'true')
+    AND P.stat_name = 'finished_hunts' AND current = 'true';
+
+    RETURN P.stat_value
+    FROM treasurehunt.playerstats P
+    WHERE player = playerName AND stat_name = 'finished_hunts';
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION updateRank(integer, varchar) 
+RETURNS integer AS
+$body$
+DECLARE
+  huntId ALIAS FOR $1;
+  playerName ALIAS FOR $2;
+BEGIN
+  UPDATE treasurehunt.participates as P
+  SET rank = (SELECT CASE WHEN max(rank) IS NULL
+    THEN 1
+    ELSE MAX(rank) + 1
+    END
+    FROM treasurehunt.memberof MO
+  WHERE hunt = huntId AND MO.team = P.team
+    AND MO.team = (SELECT mem.team
+      FROM treasurehunt.memberof mem
+      WHERE mem.player = playerName 
+      AND current = 'true'));
+  RETURN P.rank
+  FROM treasurehunt.participates P INNER JOIN memberof MO on (P.team = MO.team)
+  WHERE MO.player = playerName AND P.hunt = huntId AND MO.current = 'true';
 END;
 $body$ LANGUAGE plpgsql;
