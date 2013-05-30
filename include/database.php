@@ -245,6 +245,7 @@ function validateVisit($user,$code)
     $team = $result['team'];
     $score = $result['score'];
     $num_waypts = $result['numwaypoints'];
+    $start_time = $result['starttime'];
 
     $results = array();
 
@@ -266,11 +267,10 @@ function validateVisit($user,$code)
         {
             $results['status'] = 'complete';
 
-            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates P
-              RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
-              SET P.currentwp = NULL, P.score = (? + 1),
-                P.duration = (extract (epoch from NOW() - starttime)/60)::integer -- duration set in minutes
-              WHERE P.hunt = ? AND P.team = ?"); // TODO: Set rank
+            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
+              SET currentwp = NULL, score = (? + 1),
+                duration = (extract (epoch from NOW() - $start_time)/60)::integer -- duration set in minutes
+              WHERE hunt = ? AND team = ?"); // TODO: Set rank
             $update_query->bindParam(1, $score, PDO::PARAM_INT);
             $update_query->bindParam(2, $hunt_id, PDO::PARAM_INT);
             $update_query->bindParam(3, $team, PDO::PARAM_STR);
