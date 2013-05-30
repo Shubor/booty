@@ -283,6 +283,7 @@ function validateVisit($user,$code)
               WHERE P.hunt = $hunt_id, P.team = $team"); // TODO: Set rank
               // duration set in minutes
             $update_query->execute();
+        }
 
         // Not last way point -- give next clue
         else
@@ -309,6 +310,19 @@ function validateVisit($user,$code)
 
         // code given is incorrect
         // still attempt to store a visit attempt, but marked as incorrect, give appropriate feedback
+    }
+
+    if ($code == $ver_code['verification_code'])
+    {
+        $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
+        (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
+        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit)+1, $code, t, $hunt_id, $currentwp)");
+    }
+    else
+    {
+        $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
+        (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
+        VALUES ($team, (SELECT MAX(num) FROM TreasureHunt.Visit)+1, $code, NOW(), f, NULL, NULL)");
     }
 
     // In both cases (fail and completed waypoint) visit should be saved with current timestamp
