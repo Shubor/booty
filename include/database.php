@@ -267,13 +267,15 @@ function validateVisit($user,$code)
         {
             $results['status'] = 'complete';
 
+            echo $start_time;
             $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
               SET currentwp = NULL, score = (? + 1),
-                duration = (extract (epoch from NOW() - $start_time)/60)::integer -- duration set in minutes
+                duration = (extract (epoch from NOW() - ?)/60)::integer -- duration set in minutes
               WHERE hunt = ? AND team = ?"); // TODO: Set rank
             $update_query->bindParam(1, $score, PDO::PARAM_INT);
-            $update_query->bindParam(2, $hunt_id, PDO::PARAM_INT);
-            $update_query->bindParam(3, $team, PDO::PARAM_STR);
+            $update_query->bindParam(2, $start_time, PDO::PARAM_STR);
+            $update_query->bindParam(3, $hunt_id, PDO::PARAM_INT);
+            $update_query->bindParam(4, $team, PDO::PARAM_STR);
             $update_query->execute();
 
         }
