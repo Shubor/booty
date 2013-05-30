@@ -17,7 +17,7 @@ try {
     echo '</thead>';
     echo '<tbody>';
     foreach($hunts as $hunt) {
-        echo '<tr><td><a href="huntdetails.php?hunt=',$hunt['id'],'">',$hunt['name'],'</a></td>',
+        echo '<tr><td><a href="huntdetails.php?hunt=',$hunt['identi'],'">',$hunt['name'],'</a></td>',
                 '<td>',$hunt['start'],'</td><td>',$hunt['distance'],'</td>',
                 '<td>',$hunt['nwaypoints'],'</td></tr>';
     }

@@ -21,6 +21,7 @@ try {
     echo '</table>';
 } catch (Exception $e) {
     echo 'Cannot get hunt details';
+    echo $e;
 }
 htmlFoot();
 ?>
