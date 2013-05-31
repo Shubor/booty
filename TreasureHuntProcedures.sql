@@ -68,29 +68,29 @@ BEGIN
       cluetextVar := (SELECT W.clue FROM TreasureHunt.Waypoint W
                    WHERE W.hunt = huntidArg AND W.num = currentwpArg + 1);
     END IF;
-   ELSE
+  ELSE
      statusVar := 'incorrect';
      
-     IF vercodVar::integer = codeArg::integer THEN
-       INSERT INTO TreasureHunt.Visit(team, num, submitted_code, time, 
+    IF vercodVar::integer = codeArg::integer THEN
+      INSERT INTO TreasureHunt.Visit(team, num, submitted_code, time, 
                                       is_correct, visited_hunt, visited_wp)
-       VALUES (teamidArg, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
-                           FROM TreasureHunt.Visit 
-                           WHERE team = teamidArg)+1,
-               codeArg, date_trunc('seconds', current_timestamp)::timestamp, 
-               't', huntidArg, currentwpArg);
+      VALUES (teamidArg, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
+                          FROM TreasureHunt.Visit 
+                          WHERE team = teamidArg)+1,
+              codeArg, date_trunc('seconds', current_timestamp)::timestamp, 
+              't', huntidArg, currentwpArg);
                
-       GET DIAGNOSTICS countVar = ROW_COUNT;
-     ELSE
-       INSERT INTO TreasureHunt.Visit(team, num, submitted_code, time, 
-                                      is_correct, visited_hunt, visited_wp)
-       VALUES (teamidArg, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
-                           FROM TreasureHunt.Visit V
-                           WHERE V.team = teamidArg)+1,
-               codeArg, date_trunc('seconds', current_timestamp)::timestamp, 
-               'f', NULL, NULL);
+      GET DIAGNOSTICS countVar = ROW_COUNT;
+    ELSE
+      INSERT INTO TreasureHunt.Visit(team, num, submitted_code, time, 
+                                    is_correct, visited_hunt, visited_wp)
+      VALUES (teamidArg, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
+                          FROM TreasureHunt.Visit V
+                          WHERE V.team = teamidArg)+1,
+              codeArg, date_trunc('seconds', current_timestamp)::timestamp, 
+              'f', NULL, NULL);
                
-       GET DIAGNOSTICS countVar = ROW_COUNT;
+      GET DIAGNOSTICS countVar = ROW_COUNT;
      END IF;
   END IF;
 
@@ -100,7 +100,9 @@ BEGIN
     WHERE hunt = huntid;
   END IF;
 
-RETURN QUERY SELECT * FROM TreasureHunt.getHuntStatus(playerNameArg);
+RETURN QUERY SELECT statusVar, HS.name, HS.team, HS.start_time,
+                    HS.elapsed, HS.score, HS.waypoint_count, HS.clue 
+              FROM TreasureHunt.getHuntStatus(playerNameArg) HS;
         
 END;
 $body$ LANGUAGE plpgsql;

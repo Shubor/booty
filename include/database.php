@@ -293,6 +293,7 @@ function resetDatabase()
 
   $STH = connect();
 
+try {
   $STH->beginTransaction();
 
   $STH->exec("$schema");
@@ -300,6 +301,9 @@ function resetDatabase()
   $STH->exec("$data");
 
   $STH->commit();
+} catch (Exception $e) {
+    $STH->rollBack();
+}
 
   // $query = $STH->prepare("SELECT treasurehunt.resetDatabase();");
 
