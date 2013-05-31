@@ -11,7 +11,100 @@ BEGIN TRANSACTION;
   DROP FUNCTION IF EXISTS TreasureHunt.updateScore(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.updateFinishedHunts(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.updateRank(integer, varchar, varchar);
+  DROP FUNCTION IF EXISTS TreasureHunt.getData(varchar);
+  DROP FUNCTION IF EXISTS upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
 COMMIT;
+
+DROP FUNCTION IF EXISTS upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION 
+upVerify(codeArg integer, playerNameArg varchar, teamidArg varchar, huntidArg integer, 
+         currentwpArg integer, starttimeArg timestamp without time zone)
+RETURNS TABLE(status varchar, name varchar, team varchar,
+              start_time timestamp without time zone, elapsed text,
+              score integer, waypoint_count smallint, clue text) AS
+$body$
+DECLARE
+  vercodVar integer;
+  scoreVar integer;
+  numwaypointsVar smallint;
+  rankVar integer;
+  finishedHuntsVar integer;
+  cluetextVar text;
+  statusVar varchar;
+  countVar integer;
+  
+
+BEGIN
+  vercodVar := (SELECT W.verification_code 
+                FROM TreasureHunt.Waypoint W 
+                WHERE hunt = huntidArg AND num = currentwpArg);
+
+  IF vercodVar = codeArg THEN
+
+    scoreVar := (SELECT TreasureHunt.updateScore(playerNameArg));
+    numwaypointsVar := (SELECT H.numwaypoints 
+                        FROM Treasurehunt.hunt H 
+                        WHERE id = huntidArg);
+    
+    IF currentwpArg::integer = numwaypointsVar::integer THEN 
+      statusVar := 'complete';
+      
+      UPDATE TreasureHunt.Participates P
+      SET currentwp = NULL, score = (P.score + 1),
+          duration = (extract (epoch from NOW() - starttimeArg)/60)::integer -- duration set in minutes
+      WHERE P.hunt = huntidArg AND P.team = teamidArg;
+
+      finishedHuntsVar := (SELECT updateFinishedHunts(playerName));
+      rankVar := (SELECT updateRank(huntid, playerName, teamid));
+      
+    ELSE 
+      statusVar := 'correct';
+      
+      UPDATE TreasureHunt.Participates P
+      SET currentwp = (P.currentwp + 1), score = (P.score + 1)
+      WHERE P.hunt = huntidArg AND P.team = teamidArg;
+
+      cluetextVar := (SELECT W.clue FROM TreasureHunt.Waypoint W
+                   WHERE W.hunt = huntidArg AND W.num = currentwpArg + 1);
+    END IF;
+   ELSE
+     statusVar := 'incorrect';
+     
+     IF vercodVar::integer = codeArg::integer THEN
+       INSERT INTO TreasureHunt.Visit(team, num, submitted_code, time, 
+                                      is_correct, visited_hunt, visited_wp)
+       VALUES (teamidArg, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
+                           FROM TreasureHunt.Visit 
+                           WHERE team = teamidArg)+1,
+               codeArg, date_trunc('seconds', current_timestamp)::timestamp, 
+               't', huntidArg, currentwpArg);
+               
+       GET DIAGNOSTICS countVar = ROW_COUNT;
+     ELSE
+       INSERT INTO TreasureHunt.Visit(team, num, submitted_code, time, 
+                                      is_correct, visited_hunt, visited_wp)
+       VALUES (teamidArg, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END 
+                           FROM TreasureHunt.Visit V
+                           WHERE V.team = teamidArg)+1,
+               codeArg, date_trunc('seconds', current_timestamp)::timestamp, 
+               'f', NULL, NULL);
+               
+       GET DIAGNOSTICS countVar = ROW_COUNT;
+     END IF;
+  END IF;
+
+  IF countVar = 0 THEN
+    UPDATE TreasureHunt.Hunt 
+    SET statusVar = 'finished' 
+    WHERE hunt = huntid;
+  END IF;
+
+RETURN QUERY SELECT * FROM TreasureHunt.getHuntStatus(playerNameArg);
+        
+END;
+$body$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.dashboardName(varchar)
 RETURNS TABLE(name varchar, addr varchar, curr varchar) AS $body$
@@ -193,5 +286,21 @@ BEGIN
   RETURN P.rank
   FROM treasurehunt.participates P INNER JOIN memberof MO on (P.team = MO.team)
   WHERE MO.player = playerName AND P.hunt = huntId AND MO.current = 'true';
+END;
+$body$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getData(varchar)
+RETURNS TABLE(team varchar, hunt integer, currentwp smallint, 
+              score integer, numwaypoints integer, 
+              starttime timestamp without time zone) AS
+$body$
+DECLARE
+  playerName ALIAS FOR $1;
+BEGIN
+      RETURN QUERY SELECT P.team, P.hunt, P.currentwp, P.score, H.numwaypoints, H.starttime 
+      FROM TreasureHunt.Participates P
+      RIGHT OUTER JOIN TreasureHunt.MemberOf M USING (team)
+      RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
+      WHERE P.currentwp IS NOT NULL AND player = playerName and current = true;
 END;
 $body$ LANGUAGE plpgsql;

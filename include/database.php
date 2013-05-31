@@ -237,10 +237,7 @@ function validateVisit($user,$code)
     // STUDENT TODO:
     // Replace lines below with code to obtain status from the database
 
-    $query = $STH->prepare("SELECT * FROM TreasureHunt.Participates P
-      RIGHT OUTER JOIN TreasureHunt.MemberOf M USING (team)
-      RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
-      WHERE P.currentwp IS NOT NULL AND player = ? and current = true");
+    $query = $STH->prepare("SELECT * FROM TreasureHunt.getData(?);");
     $query->bindParam(1, $user, PDO::PARAM_STR);
     $query->execute();
     $query->setFetchMode(PDO::FETCH_ASSOC);
@@ -255,118 +252,24 @@ function validateVisit($user,$code)
 
     $results = array(); // All things under $results relate to the team, not overall hunt
 
-    // Fetch required verification code and then compare it with given verification code
-    $ver_code = $STH->prepare("SELECT * FROM TreasureHunt.Waypoint WHERE hunt = ? AND num = ?");
-    $ver_code->bindParam(1, $hunt_id, PDO::PARAM_INT);
-    $ver_code->bindParam(2, $currentwp, PDO::PARAM_INT);
-    $ver_code->execute();
-    $ver_code->setFetchMode(PDO::FETCH_ASSOC);
-    $ver_code_result = $ver_code->fetch();
+    $verify = $STH->prepare("SELECT * FROM TreasureHunt.upVerify(:code, :user, :team, :hunt_id, 
+                                                                 :currentwp, :starttime);");
+    $verify->bindParam(':code', $code, PDO::PARAM_INT);
+    $verify->bindParam(':user', $user, PDO::PARAM_STR);
+    $verify->bindParam(':team', $team, PDO::PARAM_INT);
+    $verify->bindParam(':hunt_id', $hunt_id, PDO::PARAM_INT);
+    $verify->bindParam(':currentwp', $currentwp, PDO::PARAM_INT);
+    $verify->bindParam(':starttime', $start_time, PDO::PARAM_STR);
 
-    if ($code == $ver_code_result['verification_code'])
-    {
-        //this updates the score for the relevant team
-        $results['score'] = updateScore($user);
+    $verify->execute();
 
-        // ** Last waypoint
-        //   update team's hunt status, (currentwp = null, duration, score, rank)
-        if ($currentwp == $num_waypts)
-        {
-            $results['status'] = 'complete';
+    // $returns = $verify->fetch();
 
-            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
-              SET currentwp = NULL, score = (? + 1),
-                duration = (extract (epoch from NOW() - ?)/60)::integer -- duration set in minutes
-              WHERE hunt = ? AND team = ?"); // TODO: Set rank
-            $update_query->bindParam(1, $score, PDO::PARAM_INT);
-            $update_query->bindParam(2, $start_time, PDO::PARAM_STR);
-            $update_query->bindParam(3, $hunt_id, PDO::PARAM_INT);
-            $update_query->bindParam(4, $team, PDO::PARAM_STR);
-            $update_query->execute();
+    // print_r($returns);
 
-            // TODO: Update the statistics for all players in the team
-            // Can do this here, or after updating the visit log
-            $updateFinishedHunts = updateFinishedHunts($user);
-            $results['rank'] = updateRank($hunt_id, $user, $team);
+    $verify->setFetchMode(PDO::FETCH_ASSOC);
 
-
-        }
-        // ** Not last way point -- give next clue
-        else
-        {
-            $results['status'] = 'correct';
-
-            $update_query = $STH->prepare("UPDATE TreasureHunt.Participates
-              SET currentwp = (? + 1), score = (? + 1)
-              WHERE hunt = ? AND team = ?");
-            $update_query->bindParam(1, $currentwp, PDO::PARAM_INT);
-            $update_query->bindParam(2, $score, PDO::PARAM_INT);
-            $update_query->bindParam(3, $hunt_id, PDO::PARAM_INT);
-            $update_query->bindParam(4, $team, PDO::PARAM_STR);
-            $update_query->execute();
-
-            $next_clue = $STH->prepare("SELECT clue FROM TreasureHunt.Waypoint WHERE hunt = ? AND NUM = ?+1");
-            $next_clue->bindParam(1, $hunt_id, PDO::PARAM_INT);
-            $next_clue->bindParam(2, $currentwp, PDO::PARAM_INT);
-            $next_clue->execute();
-            $next_clue->setFetchMode(PDO::FETCH_ASSOC);
-            $clue = $next_clue->fetch();
-
-            $results['clue'] = $clue['clue'];
-        }
-    }
-
-    else
-    {
-        $results['status'] = 'incorrect';
-
-        // ** code given is incorrect
-        // still attempt to store a visit attempt, but marked as incorrect, give appropriate feedback
-    }
-
-    /* Updating the TreasureHunt.Visit log */
-    if ($code == $ver_code_result['verification_code'])
-    {
-        $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
-        (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END FROM TreasureHunt.Visit WHERE team = ?)+1,
-          ?, date_trunc('seconds', current_timestamp)::timestamp, 't', ?, ?)");
-        $log_visit->bindParam(1, $team, PDO::PARAM_STR);
-        $log_visit->bindParam(2, $team, PDO::PARAM_STR);
-        $log_visit->bindParam(3, $code, PDO::PARAM_INT);
-        $log_visit->bindParam(4, $hunt_id, PDO::PARAM_INT);
-        $log_visit->bindParam(5, $currentwp, PDO::PARAM_INT);
-        $log_visit->execute();
-    }
-    else
-    {
-        $log_visit = $STH->prepare("INSERT INTO TreasureHunt.Visit
-        (team, num, submitted_code, time, is_correct, visited_hunt, visited_wp)
-        VALUES (?, (SELECT CASE WHEN MAX(num) IS NULL THEN 0 ELSE MAX(num) END FROM TreasureHunt.Visit WHERE team = ?)+1,
-          ?, date_trunc('seconds', current_timestamp)::timestamp, 'f', NULL, NULL)");
-        $log_visit->bindParam(1, $team, PDO::PARAM_STR);
-        $log_visit->bindParam(2, $team, PDO::PARAM_STR);
-        $log_visit->bindParam(3, $code, PDO::PARAM_INT);
-        $log_visit->execute();
-    }
-
-    /* Check for completion of the entire hunt */
-    $hunt_completion = $STH->prepare("SELECT count(team) AS num
-      FROM TreasureHunt.participates WHERE hunt = ? AND currentWP IS NOT NULL");
-    $hunt_completion->bindParam(1, $hunt, PDO::PARAM_INT);
-    $hunt_completion->execute();
-    $count = $hunt_completion->rowCount();
-
-    if ($count == 0) // Entire hunt is complete
-    {
-        $update_hunt_completion = $STH->prepare("UPDATE TreasureHunt.Hunt SET status = 'finished' WHERE hunt = ?");
-        $update_hunt_completion->bindParam(1, $hunt_id, PDO::PARAM_INT);
-        $update_hunt_completion->execute();
-
-        // TODO: Work out ranks for all the different teams
-    }
-
-    return $results;
+    return $verify->fetch();
 }
 
 function getUserStatistics($user)
