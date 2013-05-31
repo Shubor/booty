@@ -35,7 +35,6 @@ if (!isset($_REQUEST['vcode'])) {
         }
         else
         {
-            print_r($visit);
             echo '<h2>Wrong verification code!</h2> (Out of order, or not in this hunt)';
         }
     } catch (Exception $e) {

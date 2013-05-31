@@ -314,7 +314,7 @@ try {
 function updateScore($user)
 {
     $STH = connect();
-    $updateScore = $STH->prepare("SELECT * FROM updateScore(?);");
+    $updateScore = $STH->prepare("SELECT * FROM Treasurehunt.updateScore(?);");
     $updateScore->bindParam(1, $user, PDO::PARAM_STR);
     $updateScore->execute();
     $updateScore->setFetchMode(PDO::FETCH_NUM);
@@ -325,7 +325,7 @@ function updateScore($user)
 function updateRank($hunt_id, $user, $team)
 {
     $STH = connect();
-    $updateRank = $STH->prepare("SELECT updateRank(?, ?, ?);");
+    $updateRank = $STH->prepare("SELECT treasurehunt.updateRank(?, ?, ?);");
     $updateRank->bindParam(1, $hunt_id, PDO::PARAM_INT);
     $updateRank->bindParam(2, $user, PDO::PARAM_STR);
     $updateRank->bindParam(3, $team, PDO::PARAM_STR);
@@ -338,7 +338,7 @@ function updateRank($hunt_id, $user, $team)
 function updateFinishedHunts($user)
 {
     $STH = connect();
-    $updateHunts = $STH->prepare("SELECT updateFinishedHunts(?);");
+    $updateHunts = $STH->prepare("SELECT treasurehunt.updateFinishedHunts(?);");
     $updateHunts->bindParam(1, $user, PDO::PARAM_STR);
     $updateHunts->execute();
     $updateHunts->setFetchMode(PDO::FETCH_NUM);

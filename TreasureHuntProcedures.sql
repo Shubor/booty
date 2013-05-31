@@ -15,14 +15,13 @@ BEGIN TRANSACTION;
   DROP FUNCTION IF EXISTS upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
 COMMIT;
 
-DROP FUNCTION IF EXISTS upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
 
 CREATE OR REPLACE FUNCTION 
 upVerify(codeArg integer, playerNameArg varchar, teamidArg varchar, huntidArg integer, 
          currentwpArg integer, starttimeArg timestamp without time zone)
 RETURNS TABLE(status varchar, name varchar, team varchar,
               start_time timestamp without time zone, elapsed text,
-              score integer, waypoint_count smallint, clue text) AS
+              score integer, waypoint_count smallint, clue text, rank integer) AS
 $body$
 DECLARE
   vercodVar integer;
@@ -33,7 +32,7 @@ DECLARE
   cluetextVar text;
   statusVar varchar;
   countVar integer;
-  
+  elapsedVar timestamp without time zone;
 
 BEGIN
   vercodVar := (SELECT W.verification_code 
@@ -49,14 +48,13 @@ BEGIN
     
     IF currentwpArg::integer = numwaypointsVar::integer THEN 
       statusVar := 'complete';
-      
       UPDATE TreasureHunt.Participates P
       SET currentwp = NULL, score = (P.score + 1),
           duration = (extract (epoch from NOW() - starttimeArg)/60)::integer -- duration set in minutes
       WHERE P.hunt = huntidArg AND P.team = teamidArg;
 
-      finishedHuntsVar := (SELECT updateFinishedHunts(playerName));
-      rankVar := (SELECT updateRank(huntid, playerName, teamid));
+      finishedHuntsVar := (SELECT updateFinishedHunts(playerNameArg));
+      rankVar := (SELECT updateRank(huntidArg, playerNameArg, teamidArg));
       
     ELSE 
       statusVar := 'correct';
@@ -100,9 +98,14 @@ BEGIN
     WHERE hunt = huntid;
   END IF;
 
-RETURN QUERY SELECT statusVar, HS.name, HS.team, HS.start_time,
-                    HS.elapsed, HS.score, HS.waypoint_count, HS.clue 
+IF statusVar = 'complete' THEN
+  RETURN QUERY SELECT statusVar, 'a'::varchar, 'a'::varchar, NOW()::timestamp without time zone, 
+                      'a'::text, scoreVar, 0::smallint, 'a'::text, rankVar;
+ELSE
+  RETURN QUERY SELECT statusVar, HS.name, HS.team, HS.start_time,
+                    HS.elapsed, HS.score, HS.waypoint_count, HS.clue, 0
               FROM TreasureHunt.getHuntStatus(playerNameArg) HS;
+END IF;
         
 END;
 $body$ LANGUAGE plpgsql;
