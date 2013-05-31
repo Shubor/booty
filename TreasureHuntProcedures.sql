@@ -99,6 +99,9 @@ BEGIN
   END IF;
 
 IF statusVar = 'complete' THEN
+  scoreVar := (SELECT P.score 
+               FROM treasurehunt.participates P
+               WHERE P.team = teamidArg AND P.hunt = huntidArg);
   RETURN QUERY SELECT statusVar, 'a'::varchar, 'a'::varchar, NOW()::timestamp without time zone, 
                       'a'::text, scoreVar, 0::smallint, 'a'::text, rankVar;
 ELSE
