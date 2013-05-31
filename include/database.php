@@ -252,7 +252,7 @@ function validateVisit($user,$code)
 
     $results = array(); // All things under $results relate to the team, not overall hunt
 
-    $verify = $STH->prepare("SELECT * FROM TreasureHunt.upVerify(:code, :user, :team, :hunt_id, 
+    $verify = $STH->prepare("SELECT * FROM TreasureHunt.upVerify(:code, :user, :team, :hunt_id,
                                                                  :currentwp, :starttime);");
     $verify->bindParam(':code', $code, PDO::PARAM_INT);
     $verify->bindParam(':user', $user, PDO::PARAM_STR);
@@ -287,27 +287,30 @@ function getUserStatistics($user)
 function resetDatabase()
 {
 
-  $schema = file_get_contents('./TreasureHuntSchema.sql');
-  $procedures = file_get_contents('./TreasureHuntProcedures.sql');
-  $data = file_get_contents('./TreasureHuntExampleData.sql');
+        $schema = file_get_contents('./TreasureHuntSchema.sql');
+        $procedures = file_get_contents('./TreasureHuntProcedures.sql');
+        $data = file_get_contents('./TreasureHuntExampleData.sql');
 
-  $STH = connect();
+        $STH = connect();
 
-try {
-  $STH->beginTransaction();
+        try
+        {
+            $STH->beginTransaction();
 
-  $STH->exec("$schema");
-  $STH->exec("$procedures");
-  $STH->exec("$data");
+            $STH->exec("$schema");
+            $STH->exec("$procedures");
+            $STH->exec("$data");
 
-  $STH->commit();
-} catch (Exception $e) {
-    $STH->rollBack();
-}
+            $STH->commit();
+        }
+        catch (Exception $e)
+        {
+            $STH->rollBack();
+        }
 
-  // $query = $STH->prepare("SELECT treasurehunt.resetDatabase();");
+      // $query = $STH->prepare("SELECT treasurehunt.resetDatabase();");
 
-  // $query->execute;
+      // $query->execute;
 
 }
 
