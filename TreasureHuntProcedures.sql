@@ -403,7 +403,7 @@ $BODY$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratAmount(varchar)
+CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratType(varchar)
 RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
 DECLARE
   playerName ALIAS FOR $1;
@@ -416,11 +416,11 @@ SELECT DISTINCT FR.stat_name AS stat_name, SUM(FR.stat_value) AS stat, FR.name,
 	ELSE 'Both or neither'
 	END AS stat_value
   FROM (
-	SELECT FR_N.stat_name AS stat_name, FR_N.base AS stat_value, FR_N.name AS name,
+	SELECT FR_N.stat_name AS stat_name, FR_N.base AS stat, FR_N.name AS name,
 		   CASE  WHEN FR_N.base = 0 THEN -1
 			 WHEN FR_N.base = 6 THEN -1
 			 ELSE 1
-			 END
+			 END AS stat_value
 		FROM (SELECT DISTINCT 'Player Type' AS stat_name, PL.name AS name, EXTRACT(DOW FROM H.starttime) AS base
 			FROM TreasureHunt.Player PL 
 			RIGHT OUTER JOIN TreasureHunt.MemberOf MO ON (PL.name = MO.player) 
@@ -430,7 +430,6 @@ SELECT DISTINCT FR.stat_name AS stat_name, SUM(FR.stat_value) AS stat, FR.name,
 			) FR_N
 	) FR
 	GROUP BY FR.stat_name, FR.stat_value, FR.name
-	LIMIT 1 
 	) F
 END;
 $BODY$ LANGUAGE plpgsql;

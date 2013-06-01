@@ -56,5 +56,21 @@ try {
     echo $e;
 }
 
+try {
+    $details = getUserFratType($_SESSION['player']);
+    echo '<table class="table table-hover">';
+    foreach($details as $stat) {
+        $plode = explode("_", $stat['stat_name']);
+        $plode = implode(" ", $plode);
+        echo '<tr><td><b>',ucwords($plode),'</b></td> <td style="text-align:right">',$stat['stat_value'],'</td></tr>';
+    }
+    echo '</td></tr>';
+    echo '</table>';
+
+} catch (Exception $e) {
+    echo 'Cannot get user statistics';
+    echo $e;
+}
+
 htmlFoot();
 ?>
