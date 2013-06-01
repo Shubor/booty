@@ -348,4 +348,49 @@ function updateFinishedHunts($user)
     $result = $updateHunts->fetch();
     return $result[0];
 }
+
+function getUserFratFrequency($user)
+{
+    $STH = connect();
+    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratFrequency(?);");
+    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+    $queryStats->execute();
+    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+    $results = $queryStats->fetchAll();
+    return $results;
+}
+
+function getUserFratRecency($user)
+{
+    $STH = connect();
+    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratRecency(?);");
+    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+    $queryStats->execute();
+    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+    $results = $queryStats->fetchAll();
+    return $results;
+}
+
+function getUserFratAmount($user)
+{
+    $STH = connect();
+    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratAmount(?);");
+    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+    $queryStats->execute();
+    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+    $results = $queryStats->fetchAll();
+    return $results;
+}
+
+function getUserFratType($user)
+{
+    $STH = connect();
+    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratType(?);");
+    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+    $queryStats->execute();
+    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+    $results = $queryStats->fetchAll();
+    return $results;
+}
+
 ?>
