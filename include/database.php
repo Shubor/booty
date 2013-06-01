@@ -287,30 +287,26 @@ function getUserStatistics($user)
 function resetDatabase()
 {
 
-        $schema = file_get_contents('./TreasureHuntSchema.sql');
-        $procedures = file_get_contents('./TreasureHuntProcedures.sql');
-        $data = file_get_contents('./TreasureHuntExampleData.sql');
+    $schema = file_get_contents('./TreasureHuntSchema.sql');
+    $procedures = file_get_contents('./TreasureHuntProcedures.sql');
+    $data = file_get_contents('./TreasureHuntExampleData.sql');
 
-        $STH = connect();
+    $STH = connect();
 
-        try
-        {
-            $STH->beginTransaction();
+    try
+    {
+        $STH->beginTransaction();
 
-            $STH->exec("$schema");
-            $STH->exec("$procedures");
-            $STH->exec("$data");
+        $STH->exec("$schema");
+        $STH->exec("$procedures");
+        $STH->exec("$data");
 
-            $STH->commit();
-        }
-        catch (Exception $e)
-        {
-            $STH->rollBack();
-        }
-
-      // $query = $STH->prepare("SELECT treasurehunt.resetDatabase();");
-
-      // $query->execute;
+        $STH->commit();
+    }
+    catch (Exception $e)
+    {
+        $STH->rollBack();
+    }
 
 }
 
