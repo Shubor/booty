@@ -44,40 +44,48 @@ function connect($file = 'config.ini')
  */
 function checkLogin($name,$pass)
 {
-    // STUDENT TODO:
-    // Replace line below with code to validate details from the database
+    try {
+        // STUDENT TODO:
+        // Replace line below with code to validate details from the database
 
-    //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
-    $STH = connect();
+        //The status of the connection returns either PGSQL_CONNECTION_OK or PGSQL_CONNECTION_BAD//
+        $STH = connect();
 
-    if ($STH === PGSQL_CONNECTION_BAD)
-    {
-      return ($name == 'testuser' && $pass == 'testpass');
-    }
-    else
-    {
-        // $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
-
-        // $salt = $STH->prepare($getsalt);
-        // $salt->bindValue(1, $name);
-        // $salt->execute();
-
-        // $salt->fetch();
-        // $hash_password = crypt($pass);
-
-        $query = $STH->prepare("SELECT * FROM TreasureHunt.checkLogin(?,?);");
-        $query->bindValue(1, $name, PDO::PARAM_INT);
-        $query->bindValue(2, $pass, PDO::PARAM_STR);
-        $query->execute();
-
-        if ($query->fetch())
+        if ($STH === PGSQL_CONNECTION_BAD)
         {
-           return true;
+          return ($name == 'testuser' && $pass == 'testpass');
         }
         else
         {
-           return false;
+            // $getsalt = "SELECT pw_salt FROM treasurehunt.Player AS p WHERE p.name = ?";
+
+            // $salt = $STH->prepare($getsalt);
+            // $salt->bindValue(1, $name);
+            // $salt->execute();
+
+            // $salt->fetch();
+            // $hash_password = crypt($pass);
+
+            $query = $STH->prepare("SELECT * FROM TreasureHunt.checkLogin(?,?);");
+            $query->bindValue(1, $name, PDO::PARAM_INT);
+            $query->bindValue(2, $pass, PDO::PARAM_STR);
+            $query->execute();
+
+            if ($query->fetch())
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
         }
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error updating your finished hunts";
+        die();
     }
 }
 
@@ -86,38 +94,45 @@ function checkLogin($name,$pass)
  * @param string $user login name user
  * @return array Details of user - see index.php
  */
-function getUserDetails($user) {
+function getUserDetails($user) 
+{
+    try {
+      $STH = connect();
 
-  $STH = connect();
+      $queryName =  $STH->prepare("SELECT * FROM treasurehunt.dashboardName(?);");
+      $queryStat =  $STH->prepare("SELECT * FROM treasurehunt.huntCount(?);");
+      $queryBadge = $STH->prepare("SELECT * FROM treasurehunt.getBadges(?);");
 
-  $queryName =  $STH->prepare("SELECT * FROM treasurehunt.dashboardName(?);");
-  $queryStat =  $STH->prepare("SELECT * FROM treasurehunt.huntCount(?);");
-  $queryBadge = $STH->prepare("SELECT * FROM treasurehunt.getBadges(?);");
+      $queryName->bindParam(1, $user, PDO::PARAM_STR);
+      $queryStat->bindParam(1, $user, PDO::PARAM_STR);
+      $queryBadge->bindParam(1, $user, PDO::PARAM_STR);
 
-  $queryName->bindParam(1, $user, PDO::PARAM_STR);
-  $queryStat->bindParam(1, $user, PDO::PARAM_STR);
-  $queryBadge->bindParam(1, $user, PDO::PARAM_STR);
+      $queryName->execute();
+      $queryStat->execute();
+      $queryBadge->execute();
 
-  $queryName->execute();
-  $queryStat->execute();
-  $queryBadge->execute();
+      $queryName->setFetchMode(PDO::FETCH_ASSOC);
+      $queryStat->setFetchMode(PDO::FETCH_ASSOC);
+      $queryBadge->setFetchMode(PDO::FETCH_ASSOC);
 
-  $queryName->setFetchMode(PDO::FETCH_ASSOC);
-  $queryStat->setFetchMode(PDO::FETCH_ASSOC);
-  $queryBadge->setFetchMode(PDO::FETCH_ASSOC);
+      $resultName = $queryName->fetch();
+      $resultStat = $queryStat->fetch();
+      $resultBadge = $queryBadge->fetchAll();
 
-  $resultName = $queryName->fetch();
-  $resultStat = $queryStat->fetch();
-  $resultBadge = $queryBadge->fetchAll();
+      $results = array();
 
-  $results = array();
-
-  $results['name'] = $resultName['name'];
-  $results['address'] = $resultName['addr'];
-  $results['team'] = $resultName['curr'];
-  $results['nhunts'] =$resultStat['stat'];
-  $results['badges'] = $resultBadge;
-
+      $results['name'] = $resultName['name'];
+      $results['address'] = $resultName['addr'];
+      $results['team'] = $resultName['curr'];
+      $results['nhunts'] =$resultStat['stat'];
+      $results['badges'] = $resultBadge;
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error updating your finished hunts";
+        die();
+    }
   return $results;
 }
 
@@ -129,21 +144,20 @@ function getUserDetails($user) {
  */
 function getAvailableHunts()
 {
-    /*All attempted connections, if they fail are error
-    handled by the connect function*/
-    $STH = connect();
+    try {
+        $STH = connect();
 
-    $query = $STH->prepare("SELECT * FROM treasurehunt.getAvailableHunts();");
-    $query->execute();
-    $results = $query->fetchAll();
-
+        $query = $STH->prepare("SELECT * FROM treasurehunt.getAvailableHunts();");
+        $query->execute();
+        $results = $query->fetchAll();
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error updating your finished hunts";
+        die();
+    }
     return $results;
-
-    // TODO:
-    // If team has completed BUT overall hunt isn't complete
-    // ==> "hunt results not yet available"
-    // If team has completed AND hunt is complete
-    // ==> Display team rank etc.
 }
 
 /**
@@ -154,37 +168,44 @@ function getAvailableHunts()
  */
 function getHuntDetails($hunt)
 {
-    // STUDENT TODO:
-    // Replace lines below with code to get details of a hunt from the database
+    try {
+        // STUDENT TODO:
+        // Replace lines below with code to get details of a hunt from the database
 
-    $STH = connect();
+        $STH = connect();
 
-    // $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
+        // $query = "SELECT count(title) FROM Hunt WHERE id = $hunt";
 
-    $query_one = $STH->prepare("SELECT * FROM TreasureHunt.getHuntDetails(?);");
-    $query_two = $STH->prepare("SELECT * FROM TreasureHunt.getParticipateCount(?);");
+        $query_one = $STH->prepare("SELECT * FROM TreasureHunt.getHuntDetails(?);");
+        $query_two = $STH->prepare("SELECT * FROM TreasureHunt.getParticipateCount(?);");
 
-    $query_one->bindParam(1, $hunt, PDO::PARAM_STR);
-    $query_two->bindParam(1, $hunt, PDO::PARAM_STR);
+        $query_one->bindParam(1, $hunt, PDO::PARAM_STR);
+        $query_two->bindParam(1, $hunt, PDO::PARAM_STR);
 
-    $query_one->execute();
-    $query_two->execute();
+        $query_one->execute();
+        $query_two->execute();
 
-    $query_one->setFetchMode(PDO::FETCH_ASSOC);
-    $query_two->setFetchMode(PDO::FETCH_ASSOC);
+        $query_one->setFetchMode(PDO::FETCH_ASSOC);
+        $query_two->setFetchMode(PDO::FETCH_ASSOC);
 
-    $results_one = $query_one->fetch();
-    $results_two = $query_two->fetch();
+        $results_one = $query_one->fetch();
+        $results_two = $query_two->fetch();
 
-    $results = array();
+        $results = array();
 
-    $results['name'] = $results_one['name'];
-    $results['descrip'] = $results_one['descrip'];
-    $results['start'] = $results_one['start'];
-    $results['distance'] = $results_one['distance'];
-    $results['nteams'] = $results_two['nteams'];
-    $results['n_wp'] = $results_one['n_wp'];
-
+        $results['name'] = $results_one['name'];
+        $results['descrip'] = $results_one['descrip'];
+        $results['start'] = $results_one['start'];
+        $results['distance'] = $results_one['distance'];
+        $results['nteams'] = $results_two['nteams'];
+        $results['n_wp'] = $results_one['n_wp'];
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error getting hunt details";
+        die();
+    }
     return $results;
 }
 
@@ -196,30 +217,36 @@ function getHuntDetails($hunt)
  */
 function getHuntStatus($user)
 {
+    try {
+        // STUDENT TODO:
+        // Replace lines below with code to obtain details from the database
 
-    // STUDENT TODO:
-    // Replace lines below with code to obtain details from the database
+        $STH = connect();
 
-    $STH = connect();
+        $query =  $STH->prepare("SELECT * FROM treasurehunt.getHuntStatus(?);");
+        $query->bindParam(1, $user, PDO::PARAM_STR);
+        $query->execute();
+        $query->setFetchMode(PDO::FETCH_ASSOC);
+        $resultHunt = $query->fetch();
 
-    $query =  $STH->prepare("SELECT * FROM treasurehunt.getHuntStatus(?);");
-    $query->bindParam(1, $user, PDO::PARAM_STR);
-    $query->execute();
-    $query->setFetchMode(PDO::FETCH_ASSOC);
-    $resultHunt = $query->fetch();
-
-    $results = array(
-        'status'=>$resultHunt['status'],
-        'name'=>$resultHunt['name'],
-        'team'=>$resultHunt['team'],
-        'start_time'=>$resultHunt['start_time'],
-        'elapsed'=>$resultHunt['elapsed'],
-        // Need separate conditional table, only included if hunt status == active
-        'score'=>$resultHunt['score'],
-        'waypoint_count'=>$resultHunt['waypoint_count'] ,
-        'clue'=>$resultHunt['clue']
-    );
-
+        $results = array(
+            'status'=>$resultHunt['status'],
+            'name'=>$resultHunt['name'],
+            'team'=>$resultHunt['team'],
+            'start_time'=>$resultHunt['start_time'],
+            'elapsed'=>$resultHunt['elapsed'],
+            // Need separate conditional table, only included if hunt status == active
+            'score'=>$resultHunt['score'],
+            'waypoint_count'=>$resultHunt['waypoint_count'] ,
+            'clue'=>$resultHunt['clue']
+        );
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error getting hunt status";
+        die();
+    }
     return $results;
 }
 
@@ -232,55 +259,71 @@ function getHuntStatus($user)
  */
 function validateVisit($user,$code)
 {
-  	$STH = connect();
+    try {
+      	$STH = connect();
 
-    // STUDENT TODO:
-    // Replace lines below with code to obtain status from the database
+        // STUDENT TODO:
+        // Replace lines below with code to obtain status from the database
 
-    $query = $STH->prepare("SELECT * FROM TreasureHunt.getData(?);");
-    $query->bindParam(1, $user, PDO::PARAM_STR);
-    $query->execute();
-    $query->setFetchMode(PDO::FETCH_ASSOC);
-    $result = $query->fetch();
+        $query = $STH->prepare("SELECT * FROM TreasureHunt.getData(?);");
+        $query->bindParam(1, $user, PDO::PARAM_STR);
+        $query->execute();
+        $query->setFetchMode(PDO::FETCH_ASSOC);
+        $result = $query->fetch();
 
-    $hunt_id = $result['hunt']; // hunt id
-    $currentwp = $result['currentwp'];
-    $team = $result['team'];
-    $score = $result['score'];
-    $num_waypts = $result['numwaypoints'];
-    $start_time = $result['starttime'];
+        $hunt_id = $result['hunt']; // hunt id
+        $currentwp = $result['currentwp'];
+        $team = $result['team'];
+        $score = $result['score'];
+        $num_waypts = $result['numwaypoints'];
+        $start_time = $result['starttime'];
 
-    $results = array(); // All things under $results relate to the team, not overall hunt
+        $results = array(); // All things under $results relate to the team, not overall hunt
 
-    $verify = $STH->prepare("SELECT * FROM TreasureHunt.upVerify(:code, :user, :team, :hunt_id,
-                                                                 :currentwp, :starttime);");
-    $verify->bindParam(':code', $code, PDO::PARAM_INT);
-    $verify->bindParam(':user', $user, PDO::PARAM_STR);
-    $verify->bindParam(':team', $team, PDO::PARAM_INT);
-    $verify->bindParam(':hunt_id', $hunt_id, PDO::PARAM_INT);
-    $verify->bindParam(':currentwp', $currentwp, PDO::PARAM_INT);
-    $verify->bindParam(':starttime', $start_time, PDO::PARAM_STR);
+        $verify = $STH->prepare("SELECT * FROM TreasureHunt.upVerify(:code, :user, :team, :hunt_id,
+                                                                     :currentwp, :starttime);");
+        $verify->bindParam(':code', $code, PDO::PARAM_INT);
+        $verify->bindParam(':user', $user, PDO::PARAM_STR);
+        $verify->bindParam(':team', $team, PDO::PARAM_INT);
+        $verify->bindParam(':hunt_id', $hunt_id, PDO::PARAM_INT);
+        $verify->bindParam(':currentwp', $currentwp, PDO::PARAM_INT);
+        $verify->bindParam(':starttime', $start_time, PDO::PARAM_STR);
 
-    $verify->execute();
+        $verify->execute();
 
-    // $returns = $verify->fetch();
+        // $returns = $verify->fetch();
 
-    // print_r($returns);
+        // print_r($returns);
 
-    $verify->setFetchMode(PDO::FETCH_ASSOC);
+        $verify->setFetchMode(PDO::FETCH_ASSOC);
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error updating validating your visit";
+        die();
+    }
 
     return $verify->fetch();
 }
 
 function getUserStatistics($user)
 {
-    $STH = connect();
+    try {
+        $STH = connect();
 
-    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserStatistics(?);");
-    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
-    $queryStats->execute();
-    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
-    $results = $queryStats->fetchAll();
+        $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserStatistics(?);");
+        $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+        $queryStats->execute();
+        $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+        $results = $queryStats->fetchAll();
+    } catch (PDOException $e){
+        print "An error was returned";
+        die();
+    } catch (Exception $f) {
+        print "Error getting your statistics";
+        die();
+    }
     return $results;
 }
 
@@ -329,7 +372,7 @@ function updateScore($user)
         die();
     } catch (Exception $f) {
         print "Error updating your score";
-        return $f;
+        die();
     }
     return $result[0];
 }
@@ -350,7 +393,7 @@ function updateRank($hunt_id, $user, $team)
         die();
     } catch (Exception $f) {
         print "Error updating your rank";
-        return $f;
+        die();
     }
     return $result[0];
 }
@@ -369,7 +412,7 @@ function updateFinishedHunts($user)
         die();
     } catch (Exception $f) {
         print "Error updating your finished hunts";
-        return $f;
+        die();
     }
     return $result[0];
 }
@@ -489,7 +532,7 @@ function getCompletedHunts($user)
         return $e;
     } catch (Exception $f) {
         print "There was an error getting your completed hunts";
-        return $f;
+        die();
     }
     return $queryHunts->fetchAll();
 }
