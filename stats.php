@@ -19,6 +19,14 @@ try {
     echo '</td></tr>';
     echo '</table>';
 
+    $deets = getCompletedHunts($_SESSION['player']);
+    echo '<h3>Statistics for Hunt: ', $deets['huntname'], '</h3>';
+    echo '<table class="table table-hover">';
+    echo '<tr><td><b>Score</b></td> <td style="text-align:right">', $deets['score'], '</td></tr>';
+    echo '<tr><td><b>Rank</b></td> <td style="text-align:right">', $deets['rank'], '</td></tr>';
+    echo '<tr><td><b>Duration</b></td> <td style="text-align:right">', $deets['duration'], '</td></tr>';
+    echo '</table>';
+
 } catch (Exception $e) {
     echo 'Cannot get user statistics';
     echo $e;
