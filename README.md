@@ -74,3 +74,14 @@ In order to avoid having to reload the database everytime (since testing the ver
 	}
 
 And included it as an extra button in the menu of our website, for easy access while testing.
+
+##Extension - Option 3: Database Abstraction Layer and Security
+
+###Stored Procedures
+The project was initially undertaken without using stored procedures.  It was however still in the early stages of the project when the decision to migrate to using stored procedures was made.  Most of the problems encountered were transforming `IF - ELSE IF - ELSE` statements into sql functions.  This was overcome through using postgres variable assignment, and internal control structures.
+
+###Limited User Implementation
+A limited user access account was also required for the project extension.  It was identified that this could be implemented through two way.  Either allowing access to individual tables, views, and functions in the database schema, or though the utilisation of `EXTERNAL SECURITY DEFINER` prefaced with either `STABLE` or `VOLATILE` depending on the nature of the function. The latter option was selected for ease of implementation and maintenance. The sql code for the creation of the user account was stored in the `TreasureHunt.sql` file so that the user account would be created on every instance of the schema creation.
+
+##Extension - Option 2: FRAT Player Analysis
+
