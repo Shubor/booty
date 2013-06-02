@@ -453,9 +453,9 @@ RETURNS TABLE(huntname varchar, score integer, rank integer, duration durationdo
 $body$
 BEGIN
   RETURN QUERY SELECT CT.title AS huntname, CT.score, CT.rank, CT.duration
-  from (SELECT * FROM hunt H 
-     inner join participates P on (H.id = P.hunt)
-     inner join memberof MO on (P.team  = MO.team)) AS CT
+  from (SELECT * FROM TreasureHunt.hunt H 
+     inner join TreasureHunt.participates P on (H.id = P.hunt)
+     inner join TreasureHunt.memberof MO on (P.team  = MO.team)) AS CT
   WHERE CT.player = playerName AND CT.rank IS NOT NULL;
 END;
 $body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;

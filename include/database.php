@@ -325,7 +325,7 @@ function updateScore($user)
         $updateScore->setFetchMode(PDO::FETCH_NUM);
         $result = $updateScore->fetch();
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "Error updating your score";
@@ -346,7 +346,7 @@ function updateRank($hunt_id, $user, $team)
         $updateRank->setFetchMode(PDO::FETCH_NUM);
         $result = $updateRank->fetch();
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "Error updating your rank";
@@ -365,7 +365,7 @@ function updateFinishedHunts($user)
         $updateHunts->setFetchMode(PDO::FETCH_NUM);
         $result = $updateHunts->fetch();
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "Error updating your finished hunts";
@@ -384,7 +384,7 @@ function getUserFratFrequency($user)
         $queryStats->setFetchMode(PDO::FETCH_ASSOC);
         $results = $queryStats->fetchAll();
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "FRAT error";
@@ -403,7 +403,7 @@ function getUserFratRecency($user)
         $queryStats->setFetchMode(PDO::FETCH_ASSOC);
         $results = $queryStats->fetchAll();
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "FRAT error";
@@ -423,7 +423,7 @@ function getUserFratAmount($user)
         $results = $queryStats->fetchAll();
        
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "FRAT error";
@@ -442,7 +442,7 @@ function getUserFratType($user)
         $queryStats->setFetchMode(PDO::FETCH_ASSOC);
         $results = $queryStats->fetchAll();
     } catch (PDOException $e){
-        print "An error was returned"
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "FRAT error";
@@ -485,8 +485,8 @@ function getCompletedHunts($user)
         $queryHunts->execute();
         $queryHunts->setFetchMode(PDO::FETCH_ASSOC);
     } catch (PDOException $e){
-        print "An error was returned"
-        die();
+        print "An error was returned";
+        return $e;
     } catch (Exception $f) {
         print "There was an error getting your completed hunts";
         return $f;
