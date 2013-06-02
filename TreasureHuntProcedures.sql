@@ -17,6 +17,7 @@ BEGIN TRANSACTION;
   DROP FUNCTION IF EXISTS TreasureHunt.getUserFratAmount(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.getUserFratType(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
+  DROP FUNCTION IF EXISTS TreasureHunt.getCompletedHunts(varchar);
 COMMIT;
 
 
@@ -445,3 +446,16 @@ SELECT DISTINCT FR.stat_name AS stat_name, SUM(FR.stat_value) AS stat, FR.name,
 	) F;
 END;
 $BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
+
+CREATE OR REPLACE FUNCTION getCompletedHunts(playerName varchar)
+RETURNS TABLE(huntname varchar, score integer, rank integer, duration durationdomain) AS
+$body$
+BEGIN
+  RETURN QUERY SELECT CT.title AS huntname, CT.score, CT.rank, CT.duration
+  from (SELECT * FROM hunt H 
+     inner join participates P on (H.id = P.hunt)
+     inner join memberof MO on (P.team  = MO.team)) AS CT
+  WHERE CT.player = playerName AND CT.rank IS NOT NULL;
+END;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;

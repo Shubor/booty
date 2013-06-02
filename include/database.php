@@ -291,7 +291,12 @@ function resetDatabase()
     $procedures = file_get_contents('./TreasureHuntProcedures.sql');
     $data = file_get_contents('./TreasureHuntExampleData.sql');
 
-    $STH = connectForReset();
+    try {
+        $STH = connectForReset();
+    } catch (PDOException $f) {
+        print "Error on database connect";
+        die();
+    }
 
     try
     {
@@ -312,80 +317,137 @@ function resetDatabase()
 
 function updateScore($user)
 {
-    $STH = connect();
-    $updateScore = $STH->prepare("SELECT * FROM Treasurehunt.updateScore(?);");
-    $updateScore->bindParam(1, $user, PDO::PARAM_STR);
-    $updateScore->execute();
-    $updateScore->setFetchMode(PDO::FETCH_NUM);
-    $result = $updateScore->fetch();
+    try {
+        $STH = connect();
+        $updateScore = $STH->prepare("SELECT * FROM Treasurehunt.updateScore(?);");
+        $updateScore->bindParam(1, $user, PDO::PARAM_STR);
+        $updateScore->execute();
+        $updateScore->setFetchMode(PDO::FETCH_NUM);
+        $result = $updateScore->fetch();
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "Error updating your score";
+        return $f;
+    }
     return $result[0];
 }
 
 function updateRank($hunt_id, $user, $team)
 {
-    $STH = connect();
-    $updateRank = $STH->prepare("SELECT treasurehunt.updateRank(?, ?, ?);");
-    $updateRank->bindParam(1, $hunt_id, PDO::PARAM_INT);
-    $updateRank->bindParam(2, $user, PDO::PARAM_STR);
-    $updateRank->bindParam(3, $team, PDO::PARAM_STR);
-    $updateRank->execute();
-    $updateRank->setFetchMode(PDO::FETCH_NUM);
-    $result = $updateRank->fetch();
+    try {
+        $STH = connect();
+        $updateRank = $STH->prepare("SELECT treasurehunt.updateRank(?, ?, ?);");
+        $updateRank->bindParam(1, $hunt_id, PDO::PARAM_INT);
+        $updateRank->bindParam(2, $user, PDO::PARAM_STR);
+        $updateRank->bindParam(3, $team, PDO::PARAM_STR);
+        $updateRank->execute();
+        $updateRank->setFetchMode(PDO::FETCH_NUM);
+        $result = $updateRank->fetch();
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "Error updating your rank";
+        return $f;
+    }
     return $result[0];
 }
 
 function updateFinishedHunts($user)
 {
-    $STH = connect();
-    $updateHunts = $STH->prepare("SELECT treasurehunt.updateFinishedHunts(?);");
-    $updateHunts->bindParam(1, $user, PDO::PARAM_STR);
-    $updateHunts->execute();
-    $updateHunts->setFetchMode(PDO::FETCH_NUM);
-    $result = $updateHunts->fetch();
+    try {
+        $STH = connect();
+        $updateHunts = $STH->prepare("SELECT treasurehunt.updateFinishedHunts(?);");
+        $updateHunts->bindParam(1, $user, PDO::PARAM_STR);
+        $updateHunts->execute();
+        $updateHunts->setFetchMode(PDO::FETCH_NUM);
+        $result = $updateHunts->fetch();
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "Error updating your finished hunts";
+        return $f;
+    }
     return $result[0];
 }
 
 function getUserFratFrequency($user)
 {
-    $STH = connect();
-    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratFrequency(?);");
-    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
-    $queryStats->execute();
-    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
-    $results = $queryStats->fetchAll();
+    try {
+        $STH = connect();
+        $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratFrequency(?);");
+        $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+        $queryStats->execute();
+        $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+        $results = $queryStats->fetchAll();
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "FRAT error";
+        return 'false';
+    }
     return $results;
 }
 
 function getUserFratRecency($user)
 {
-    $STH = connect();
-    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratRecency(?);");
-    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
-    $queryStats->execute();
-    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
-    $results = $queryStats->fetchAll();
+    try {
+        $STH = connect();
+        $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratRecency(?);");
+        $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+        $queryStats->execute();
+        $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+        $results = $queryStats->fetchAll();
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "FRAT error";
+        return 'false';
+    }
     return $results;
 }
 
 function getUserFratAmount($user)
 {
-    $STH = connect();
-    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratAmount(?);");
-    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
-    $queryStats->execute();
-    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
-    $results = $queryStats->fetchAll();
+    try {
+        $STH = connect();
+        $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratAmount(?);");
+        $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+        $queryStats->execute();
+        $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+        $results = $queryStats->fetchAll();
+       
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "FRAT error";
+        return 'false';
+    }
     return $results;
 }
 
 function getUserFratType($user)
 {
-    $STH = connect();
-    $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratType(?);");
-    $queryStats->bindParam(1, $user, PDO::PARAM_STR);
-    $queryStats->execute();
-    $queryStats->setFetchMode(PDO::FETCH_ASSOC);
-    $results = $queryStats->fetchAll();
+    try {
+        $STH = connect();
+        $queryStats = $STH->prepare("SELECT * FROM TreasureHunt.getUserFratType(?);");
+        $queryStats->bindParam(1, $user, PDO::PARAM_STR);
+        $queryStats->execute();
+        $queryStats->setFetchMode(PDO::FETCH_ASSOC);
+        $results = $queryStats->fetchAll();
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "FRAT error";
+        return 'false';
+    }
     return $results;
 }
 
@@ -412,6 +474,24 @@ function connectForReset($file = 'configForReset.ini')
         die();
     }
     return $dbh;
+}
+
+function getCompletedHunts($user)
+{
+    try {
+        $STH = connect();
+        $queryHunts = $STH->prepare("SELECT * FROM TreasureHunt.getCompletedHunts(?);");
+        $queryHunts->bindParam(1, $user, PDO::PARAM_STR);
+        $queryHunts->execute();
+        $queryHunts->setFetchMode(PDO::FETCH_ASSOC);
+    } catch (PDOException $e){
+        print "An error was returned"
+        die();
+    } catch (Exception $f) {
+        print "There was an error getting your completed hunts";
+        return $f;
+    }
+    return $queryHunts->fetchAll();
 }
 
 
