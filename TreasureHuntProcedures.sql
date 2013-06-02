@@ -21,7 +21,7 @@ COMMIT;
 
 
 CREATE OR REPLACE FUNCTION
-upVerify(codeArg integer, playerNameArg varchar, teamidArg varchar, huntidArg integer,
+TreasureHunt.upVerify(codeArg integer, playerNameArg varchar, teamidArg varchar, huntidArg integer,
          currentwpArg integer, starttimeArg timestamp without time zone)
 RETURNS TABLE(status varchar, name varchar, team varchar,
               start_time timestamp without time zone, elapsed text,
@@ -115,7 +115,7 @@ ELSE
 END IF;
 
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql VOLATILE EXTERNAL SECURITY DEFINER;
 
 
 CREATE OR REPLACE FUNCTION treasureHunt.dashboardName(varchar)
@@ -128,7 +128,8 @@ BEGIN
   LEFT OUTER JOIN treasurehunt.memberOf M ON (P.name = M.player)
   WHERE P.name = playerName;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.huntCount(varchar)
 RETURNS TABLE(stat varchar) AS $body$
@@ -139,7 +140,8 @@ BEGIN
   FROM treasurehunt.playerStats PS
   WHERE PS.player = playerName AND PS.stat_name = 'finished_hunts';
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.getBadges(varchar)
 RETURNS TABLE(name varchar, descrip text) AS $body$
@@ -151,7 +153,8 @@ BEGIN
   INNER JOIN treasurehunt.badge B ON (A.badge = B.name)
   WHERE A.player = playerName;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.getHuntStatus(varchar)
 RETURNS TABLE(status varchar, name varchar, team varchar,
@@ -172,7 +175,8 @@ BEGIN
       RIGHT OUTER JOIN TreasureHunt.Waypoint W ON (H.id=W.hunt)
     WHERE M.player=playerName AND M.current='true' AND P.currentWP=W.num;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.getUserStatistics(varchar)
 RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
@@ -184,7 +188,8 @@ BEGIN
   WHERE PS.player = playerName
   ORDER BY stat_name ASC;
 END;
-$BODY$ LANGUAGE plpgsql;
+$BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.getAvailableHunts()
 RETURNS TABLE(identi integer, name varchar, start timestamp without time zone, distance integer, nwaypoints integer)
@@ -195,7 +200,8 @@ BEGIN
   WHERE status = 'open'
   ORDER BY H.title ASC;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.getHuntDetails(integer)
 RETURNS TABLE(identi integer, name varchar, descrip text, distance integer, start timestamp without time zone, n_wp integer) AS
@@ -207,7 +213,8 @@ BEGIN
   FROM TreasureHunt.Hunt H
   WHERE id = huntId;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION treasureHunt.getParticipateCount(integer)
 RETURNS TABLE(nteams bigint) AS
@@ -219,7 +226,8 @@ BEGIN
   FROM TreasureHunt.Participates
   WHERE hunt = huntId;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION checkLogin(varchar, varchar)
 RETURNS TABLE(name varchar) AS
@@ -232,7 +240,7 @@ BEGIN
   FROM treasurehunt.Player AS p
   WHERE p.name = playerName AND p.password = passwd LIMIT 1;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 CREATE OR REPLACE FUNCTION updateScore(varchar)
 RETURNS integer AS
@@ -254,7 +262,8 @@ BEGIN
     FROM treasurehunt.playerstats P
     WHERE player = playerName AND stat_name = 'point_score';
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql VOLATILE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION updateFinishedHunts(varchar)
 RETURNS integer AS
@@ -276,7 +285,8 @@ BEGIN
     FROM treasurehunt.playerstats P
     WHERE player = playerName AND stat_name = 'finished_hunts';
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql VOLATILE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION updateRank(integer, varchar, varchar)
 RETURNS integer AS
@@ -299,7 +309,8 @@ BEGIN
   FROM treasurehunt.participates P INNER JOIN memberof MO on (P.team = MO.team)
   WHERE MO.player = playerName AND P.hunt = huntId AND MO.current = 'true';
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql VOLATILE EXTERNAL SECURITY DEFINER;
+
 
 CREATE OR REPLACE FUNCTION getData(varchar)
 RETURNS TABLE(team varchar, hunt integer, currentwp smallint,
@@ -315,7 +326,7 @@ BEGIN
       RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.Hunt = H.id)
       WHERE P.currentwp IS NOT NULL AND player = playerName and current = true;
 END;
-$body$ LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratFrequency(varchar)
@@ -343,7 +354,7 @@ BEGIN
 		) PC
   WHERE FR.name = playerName;
 END;
-$BODY$ LANGUAGE plpgsql;
+$BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 
@@ -370,7 +381,7 @@ BEGIN
 		) PC
   WHERE FR.name = playerName;
 END;
-$BODY$ LANGUAGE plpgsql;
+$BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 
@@ -399,7 +410,7 @@ BEGIN
 		) PC
   WHERE FR.name = playerName;
 END;
-$BODY$ LANGUAGE plpgsql;
+$BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 
@@ -432,7 +443,4 @@ SELECT DISTINCT FR.stat_name AS stat_name, SUM(FR.stat_value) AS stat, FR.name,
 	GROUP BY FR.stat_name, FR.stat_value, FR.name
 	) F;
 END;
-$BODY$ LANGUAGE plpgsql;
-
-
-
+$BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;

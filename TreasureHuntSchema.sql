@@ -17,6 +17,7 @@ BEGIN TRANSACTION;
    DROP SCHEMA IF EXISTS TreasureHunt CASCADE;
    DROP DOMAIN IF EXISTS RatingDomain;
    DROP DOMAIN IF EXISTS DurationDomain;
+   DROP USER IF EXISTS info2120public;
 COMMIT;
 
 CREATE SCHEMA TreasureHunt;
@@ -241,6 +242,10 @@ CREATE TRIGGER TeamMin2Members_Trigger
        FOR EACH ROW
        WHEN ( TreasureHunt.getTeamSize(NEW.team) < 2 )
        EXECUTE PROCEDURE TreasureHunt.Noop();
+
+CREATE USER info2120public WITH PASSWORD '123456789';
+GRANT USAGE ON SCHEMA TreasureHunt TO info2120public;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA TreasureHunt TO info2120public;
 
 
 
