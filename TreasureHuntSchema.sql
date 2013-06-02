@@ -243,16 +243,19 @@ CREATE TRIGGER TeamMin2Members_Trigger
        WHEN ( TreasureHunt.getTeamSize(NEW.team) < 2 )
        EXECUTE PROCEDURE TreasureHunt.Noop();
 
+
+/*public user definition here*/
 CREATE USER info2120public WITH PASSWORD '123456789';
+ALTER USER info2120public SET search_path TO 'TreasureHunt';
 GRANT USAGE ON SCHEMA TreasureHunt TO info2120public;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA TreasureHunt TO info2120public;
 
 
 
-/* dummy system, remove for final */
+/* dummy system, remove for final
 INSERT INTO treasurehunt.player VALUES ('Greg', 'abc123', 'abc123', 'm', 'Sydney');
 INSERT INTO treasurehunt.player VALUES ('Charlotte', 'swordfish', 'swordfish', 'f', 'New York');
-INSERT INTO treasurehunt.player VALUES ('Table', 'chair', 'chair', 'o', 'Alice Springs');
+INSERT INTO treasurehunt.player VALUES ('Table', 'chair', 'chair', 'o', 'Alice Springs');*/
 
 
 /* IMPORTANT TODO: */
