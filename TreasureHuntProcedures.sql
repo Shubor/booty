@@ -330,28 +330,29 @@ $body$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratFrequency(varchar)
-RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
+RETURNS TABLE(stat_name text, stat_value float8) AS $BODY$
 DECLARE
   playerName ALIAS FOR $1;
 BEGIN
   RETURN QUERY  SELECT FR.stat_name AS stat_name, CEIL((FR.base * 5)/(PC.num_players) + 1) AS stat_value
   FROM (
-	SELECT DISTINCT RANK() OVER (ORDER BY (COUNT(P.hunt)/((EXTRACT(EPOCH FROM D.divisor))/(3600*24))) ASC, PL.name ASC) AS base , 'Frequency' AS stat_name
-		FROM TreasureHunt.Player PL 
-		RIGHT OUTER JOIN TreasureHunt.MemberOf MO ON (PL.name = MO.player) 
-		RIGHT OUTER JOIN TreasureHunt.Participates P ON (MO.team = P.team) 
-		RIGHT OUTER JOIN (
-			SELECT DISTINCT PL_N.name AS name, MAX(age(H_N.starttime)) AS divisor
-			FROM TreasureHunt.Player PL_N 
-			RIGHT OUTER JOIN TreasureHunt.MemberOf MO_N ON (PL_N.name = MO_N.player) 
-			RIGHT OUTER JOIN TreasureHunt.Participates P_N ON (MO_N.team = P_N.team) 
-			RIGHT OUTER JOIN TreasureHunt.Hunt H_N ON (P_N.hunt = H_N.id)
-			GROUP BY PL_N.name
-		)D ON (D.name = PL.name)
-		GROUP BY PL.name, D.divisor) FR, 
-	(SELECT COUNT(P_C.name) AS num_players
-		FROM TreasureHunt.Player P_C
-		) PC
+  SELECT DISTINCT RANK() OVER (ORDER BY (COUNT(P.hunt)/((EXTRACT(EPOCH FROM D.divisor))/(3600*24))) ASC, PL.name ASC) AS base , 
+    'Frequency' AS stat_name, PL.name
+    FROM TreasureHunt.Player PL 
+    RIGHT OUTER JOIN TreasureHunt.MemberOf MO ON (PL.name = MO.player) 
+    RIGHT OUTER JOIN TreasureHunt.Participates P ON (MO.team = P.team) 
+    RIGHT OUTER JOIN (
+      SELECT DISTINCT PL_N.name AS name, MAX(age(H_N.starttime)) AS divisor
+      FROM TreasureHunt.Player PL_N 
+      RIGHT OUTER JOIN TreasureHunt.MemberOf MO_N ON (PL_N.name = MO_N.player) 
+      RIGHT OUTER JOIN TreasureHunt.Participates P_N ON (MO_N.team = P_N.team) 
+      RIGHT OUTER JOIN TreasureHunt.Hunt H_N ON (P_N.hunt = H_N.id)
+      GROUP BY PL_N.name
+    )D ON (D.name = PL.name)
+    GROUP BY PL.name, D.divisor) FR, 
+  (SELECT COUNT(P_C.name) AS num_players
+    FROM TreasureHunt.Player P_C
+    ) PC
   WHERE FR.name = playerName;
 END;
 $BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
@@ -359,7 +360,7 @@ $BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratRecency(varchar)
-RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
+RETURNS TABLE(stat_name text, stat_value float8) AS $BODY$
 DECLARE
   playerName ALIAS FOR $1;
 BEGIN
@@ -386,7 +387,7 @@ $BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratAmount(varchar)
-RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
+RETURNS TABLE(stat_name text, stat_value float8) AS $BODY$
 DECLARE
   playerName ALIAS FOR $1;
 BEGIN
@@ -415,7 +416,7 @@ $BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
 
 
 CREATE OR REPLACE FUNCTION TreasureHunt.getUserFratType(varchar)
-RETURNS TABLE(stat_name varchar, stat_value varchar) AS $BODY$
+RETURNS TABLE(stat_name text, stat_value text) AS $BODY$
 DECLARE
   playerName ALIAS FOR $1;
 BEGIN
