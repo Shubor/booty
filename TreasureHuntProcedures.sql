@@ -16,7 +16,7 @@ BEGIN TRANSACTION;
   DROP FUNCTION IF EXISTS TreasureHunt.getUserFratRecency(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.getUserFratAmount(varchar);
   DROP FUNCTION IF EXISTS TreasureHunt.getUserFratType(varchar);
-  DROP FUNCTION IF EXISTS upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
+  DROP FUNCTION IF EXISTS TreasureHunt.upVerify(integer, varchar, varchar, integer, integer, timestamp without time zone);
 COMMIT;
 
 
@@ -341,7 +341,7 @@ BEGIN
 	(SELECT COUNT(P_C.name) AS num_players
 		FROM TreasureHunt.Player P_C
 		) PC
-  WHERE FR.name = playerName 
+  WHERE FR.name = playerName;
 END;
 $BODY$ LANGUAGE plpgsql;
 
@@ -368,7 +368,7 @@ BEGIN
 		RIGHT OUTER JOIN TreasureHunt.Hunt H ON (P.hunt = H.id)
 		WHERE H.status = 'finished'
 		) PC
-  WHERE FR.name = playerName 
+  WHERE FR.name = playerName;
 END;
 $BODY$ LANGUAGE plpgsql;
 
@@ -397,7 +397,7 @@ BEGIN
 		(SELECT COUNT(P_C.name) AS num_players
 		FROM TreasureHunt.Player P_C
 		) PC
-  WHERE FR.name = playerName 
+  WHERE FR.name = playerName;
 END;
 $BODY$ LANGUAGE plpgsql;
 
@@ -430,7 +430,7 @@ SELECT DISTINCT FR.stat_name AS stat_name, SUM(FR.stat_value) AS stat, FR.name,
 			) FR_N
 	) FR
 	GROUP BY FR.stat_name, FR.stat_value, FR.name
-	) F
+	) F;
 END;
 $BODY$ LANGUAGE plpgsql;
 
