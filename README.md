@@ -42,6 +42,8 @@ As a group, we decided to use GitHub to keep everyone's code up to date (as long
 
 The downloaded SQL schema as not immediately compatible with our requirements, and also produced errors when sample data was introduced. Therefore, these problems needed to be fixed. Fortunately, most were simple fixes in table referencing and simply required `TreasureHunt.` specified before the name of the required table.
 
+The specifying of `TreasureHunt.` before each domain was also critical. The current schema, as obtained from piazza, creates all of the domains for the project in the public schema.  This has the effect of producing an error if the public schema does not exist before running the sql schema file. Thus the `TreasureHunt.` prefix was required for the appropriate creation of the schema.
+
 ## Testing of Verification Code
 
 In order to avoid having to reload the database everytime (since testing the verification code for a team's hunt, would permanently modify the database), we created a resetDatabase function that would do this for us.
