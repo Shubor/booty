@@ -85,3 +85,12 @@ A limited user access account was also required for the project extension.  It w
 
 ##Extension - Option 2: FRAT Player Analysis
 
+###FRAT statistics
+A feature to provide relative statistics to a user when compared to the rest of the userbase, as opposed to the absolute statistics in the original schema
+
+###FRAT Quintile Analysis Method
+Users were ranked on Frequency, Recency and Amount separately. These ranks were then multiplied by 5 and divided by the number of users, giving a result ranging from 1 to 5 where 5 represents the top quintile of players and 1 represents the bottom quintile. Ranking ensures that even users who have no completed a hunt still get a score and thus avoids potential null cases.
+
+###FRAT Player Type Method
+After casting the start dates (of each hunt the user participates in) to days of the week, a case statement catches the weekends and sets them to -1 while the weekdays are +1, the sum of all such days is then either negative (more weekends than weekdays) or positive (more weekdays than weekends) or 0 (no hunts or even distribution number).
+
