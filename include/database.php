@@ -297,8 +297,7 @@ function validateVisit($user,$code)
 
         $verify->setFetchMode(PDO::FETCH_ASSOC);
     } catch (PDOException $e){
-        print "An error was returned here";
-        print $e;
+        print "An error was returned";
         die();
     } catch (Exception $f) {
         print "Error updating validating your visit";
