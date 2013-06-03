@@ -58,8 +58,8 @@ BEGIN
           duration = (extract (epoch from NOW() - starttimeArg)/60)::integer -- duration set in minutes
       WHERE P.hunt = huntidArg AND P.team = teamidArg;
 
-      finishedHuntsVar := (SELECT updateFinishedHunts(playerNameArg));
-      rankVar := (SELECT updateRank(huntidArg, playerNameArg, teamidArg));
+      finishedHuntsVar := (SELECT TreasureHunt.updateFinishedHunts(playerNameArg));
+      rankVar := (SELECT TreasureHunt.updateRank(huntidArg, playerNameArg, teamidArg));
 
     ELSE
       statusVar := 'correct';
@@ -307,7 +307,7 @@ BEGIN
   WHERE P.hunt = huntId AND P.team = teamName;
 
   RETURN P.rank
-  FROM treasurehunt.participates P INNER JOIN memberof MO on (P.team = MO.team)
+  FROM treasurehunt.participates P INNER JOIN treasureHunt.memberof MO on (P.team = MO.team)
   WHERE MO.player = playerName AND P.hunt = huntId AND MO.current = 'true';
 END;
 $body$ LANGUAGE plpgsql VOLATILE EXTERNAL SECURITY DEFINER;
