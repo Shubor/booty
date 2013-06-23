@@ -442,7 +442,7 @@ SELECT DISTINCT FR.stat_name AS stat_name, SUM(FR.stat_value) AS stat, FR.name,
 			WHERE PL.name = playerName 
 			) FR_N
 	) FR
-	GROUP BY FR.stat_name, FR.stat_value, FR.name
+	GROUP BY FR.stat_name, FR.stat_value, FR.name LIMIT 1
 	) F;
 END;
 $BODY$ LANGUAGE plpgsql STABLE EXTERNAL SECURITY DEFINER;
